@@ -22,6 +22,7 @@ public class MainActivity extends Activity {
     private int green=Color.rgb(17,83,61), gold=Color.rgb(210,174,91);
     private boolean dark;
     private float arabicSize=28f, persianSize=16f;
+    private float lineSpacingMultiplier=1.15f, wordSpacingExtra=0f;
     private Typeface arabicFace=Typeface.DEFAULT, uiFace=Typeface.DEFAULT, titleFace=Typeface.DEFAULT;
     private Handler handler=new Handler();
     private Runnable scrollTask;
@@ -39,6 +40,8 @@ public class MainActivity extends Activity {
         dark=p.getBoolean("dark",false);
         arabicSize=p.getFloat("arabic_size",28f);
         persianSize=p.getFloat("persian_size",16f);
+        lineSpacingMultiplier=p.getFloat("line_spacing",1.15f);
+        wordSpacingExtra=p.getFloat("word_spacing",0f);
         loadBundledFonts();
         loadSavedFonts();
         applyBars();
@@ -101,7 +104,8 @@ public class MainActivity extends Activity {
         outer.addView(page); setContentView(outer);
         // Header inspired by the supplied reference
         LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(18,8,18,8);
-        TextView mail=txt("⌕",29,text(),true),brand=txt("وَالعَصر",25,gold,true),headset=txt("☆",27,text(),true);
+        TextView mail=txt("⌕",27,text(),true),brand=txt("وَالْعَصْرِ",25,gold,true),headset=txt("☾",25,text(),true);
+        mail.setPadding(0,0,0,0); brand.setPadding(4,0,4,0); headset.setPadding(0,0,0,0);
         mail.setOnClickListener(v->searchOffline());headset.setOnClickListener(v->showFavorites());
         top.addView(mail,new LinearLayout.LayoutParams(48,64));
         LinearLayout.LayoutParams center=new LinearLayout.LayoutParams(0,64,1);top.addView(brand,center);
@@ -167,6 +171,7 @@ public class MainActivity extends Activity {
         LinearLayout tile=new LinearLayout(this);tile.setOrientation(LinearLayout.VERTICAL);tile.setGravity(Gravity.CENTER);tile.setPadding(2,5,2,2);
         TextView symbol=txt(icon,31,0xffffe7ad,true);
         GradientDrawable badge=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff287c67,0xff123e35,0xff092820});badge.setCornerRadius(23);badge.setStroke(1,0xffb99a59);symbol.setBackground(badge);symbol.setElevation(7);
+        symbol.setPadding(0,0,0,0);symbol.setIncludeFontPadding(true);symbol.setGravity(Gravity.CENTER);symbol.setTextSize(27);
         LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(68,68);tile.addView(symbol,ip);
         TextView caption=txt(title,12,text(),false);caption.setPadding(0,5,0,2);tile.addView(caption);
         tile.setOnClickListener(v->run.run());
@@ -201,9 +206,9 @@ public class MainActivity extends Activity {
             LinearLayout segment=column(); segment.setPadding(12,8,12,8);
             TextView ar=txt(pair[0],arabicSize,text(),true);
             ar.setTypeface(arabicFace,Typeface.NORMAL); ar.setGravity(Gravity.RIGHT);
-            ar.setLineSpacing(8,1.2f); segment.addView(ar);
+            ar.setText(spaceWords(pair[0])); ar.setLineSpacing(8,lineSpacingMultiplier); segment.addView(ar);
             TextView fa=txt(pair[1],persianSize,text(),false);
-            fa.setGravity(Gravity.RIGHT); fa.setLineSpacing(5,1.15f); segment.addView(fa);
+            fa.setGravity(Gravity.RIGHT); fa.setText(spaceWords(pair[1])); fa.setLineSpacing(5,lineSpacingMultiplier); segment.addView(fa);
             addCard(segment);
         }
         LinearLayout controls=column(); controls.setPadding(12,12,12,12);
@@ -373,6 +378,7 @@ public class MainActivity extends Activity {
         Switch theme=new Switch(this);theme.setText("حالت شب");theme.setTextColor(text());theme.setChecked(dark);
         theme.setPadding(16,14,16,14);theme.setOnCheckedChangeListener((v,on)->{dark=on;getSharedPreferences(PREF,0).edit().putBoolean("dark",on).apply();home();});addCard(theme);
         sizeControl("اندازه فونت عربی",true);sizeControl("اندازه فونت فارسی",false);
+        spacingControl("فاصله بین خطوط",true); spacingControl("فاصله بین کلمات",false);
         action("Aa","فونت متن‌های عربی","انتخاب فایل TTF/OTF از گوشی",()->pickFont(PICK_ARABIC));
         action("آ","فونت تیترها و متن اصلی","انتخاب قلم رابط کاربری",()->pickFont(PICK_UI));
         page.addView(txt("فونت‌های پیش‌فرض برنامه همراه نصب قرار می‌گیرند. در صورت تمایل می‌توانید قلم دلخواه خود را نیز از حافظه گوشی انتخاب کنید.",13,text(),false));
@@ -388,6 +394,42 @@ public class MainActivity extends Activity {
             public void onProgressChanged(SeekBar b,int p,boolean u){float n=12+p;val.setText(Math.round(n)+"sp");if(arabic)arabicSize=n;else persianSize=n;}
             public void onStartTrackingTouch(SeekBar b){}public void onStopTrackingTouch(SeekBar b){getSharedPreferences(PREF,0).edit().putFloat(arabic?"arabic_size":"persian_size",arabic?arabicSize:persianSize).apply();}
         });addCard(box);
+    }
+
+    private void spacingControl(String title,boolean lines){
+        LinearLayout box=column();box.setPadding(14,10,14,10);
+        box.addView(txt(title,15,text(),true));
+        SeekBar seek=new SeekBar(this);
+        TextView value=txt("",13,gold,true);
+        if(lines){
+            seek.setMax(12);seek.setProgress(Math.max(0,Math.min(12,Math.round((lineSpacingMultiplier-0.9f)*10f))));
+            value.setText(String.format(Locale.US,"%.1f×",lineSpacingMultiplier));
+        }else{
+            seek.setMax(6);seek.setProgress(Math.round(wordSpacingExtra*2f));
+            value.setText(String.format(Locale.US,"%.1f",1f+wordSpacingExtra));
+        }
+        box.addView(seek);box.addView(value);
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            public void onProgressChanged(SeekBar b,int p,boolean user){
+                if(lines){lineSpacingMultiplier=0.9f+p*0.1f;value.setText(String.format(Locale.US,"%.1f×",lineSpacingMultiplier));}
+                else{wordSpacingExtra=p*0.5f;value.setText(String.format(Locale.US,"%.1f",1f+wordSpacingExtra));}
+            }
+            public void onStartTrackingTouch(SeekBar b){}
+            public void onStopTrackingTouch(SeekBar b){
+                getSharedPreferences(PREF,0).edit().putFloat(lines?"line_spacing":"word_spacing",lines?lineSpacingMultiplier:wordSpacingExtra).apply();
+            }
+        });
+        addCard(box);
+    }
+    private String spaceWords(String source){
+        if(wordSpacingExtra<=0f)return source;
+        StringBuilder out=new StringBuilder(source.length()+16);
+        String gap=wordSpacingExtra<0.75f?" ":(wordSpacingExtra<1.5f?" ":" ");
+        for(int i=0;i<source.length();i++){
+            char ch=source.charAt(i);out.append(ch);
+            if(ch==' ')out.append(gap);
+        }
+        return out.toString();
     }
     private void pickFont(int code){
         Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
