@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
         String warning="متن کامل و ترجمهٔ مقابله‌شدهٔ این دعا هنوز به بانک محتوای تأییدشدهٔ برنامه افزوده نشده است.";
         page.addView(txt(warning,16,text(),false));
         page.addView(txt("نمونهٔ قالب نمایش دعا",14,gold,true));
-        page.addView(txt("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",arabicSize,text(),true));
+        TextView ar=txt("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",arabicSize,text(),true); ar.setTypeface(arabicFace,Typeface.NORMAL); page.addView(ar);
         page.addView(txt("به نام خداوند بخشنده مهربان",persianSize,text(),false));
         page.addView(txt("پس از افزودن متن معتبر، هر بخش عربی همراه با ترجمهٔ همان بخش نمایش داده خواهد شد.",persianSize,text(),false));
         LinearLayout controls=column();controls.setPadding(12,12,12,12);
