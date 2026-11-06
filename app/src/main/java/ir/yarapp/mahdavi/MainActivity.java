@@ -17,6 +17,7 @@ import java.util.*;
 public class MainActivity extends Activity {
     private static final String PREF="yar_settings";
     private static final int PICK_ARABIC=101, PICK_UI=102;
+    private boolean activityDestroyed=false;
     private LinearLayout page;
     private int green=Color.rgb(17,83,61), gold=Color.rgb(210,174,91);
     private boolean dark;
@@ -258,8 +259,8 @@ public class MainActivity extends Activity {
     }
     private void toggleScroll(){
         scrolling=!scrolling;
-        if(scrolling){if(scrollTask!=null)handler.post(scrollTask);toast("اسکرول خودکار شروع شد");}
-        else {handler.removeCallbacks(scrollTask);toast("اسکرول متوقف شد");}
+        if(scrolling){if(scrollTask!=null){handler.removeCallbacks(scrollTask);handler.post(scrollTask);}toast("اسکرول خودکار شروع شد");}
+        else {if(scrollTask!=null)handler.removeCallbacks(scrollTask);toast("اسکرول متوقف شد");}
     }
     private Button button(String s,Runnable r){
         Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(Color.WHITE);
@@ -270,7 +271,8 @@ public class MainActivity extends Activity {
         base(title);
         if(title.contains("قرآن")){
             page.addView(txt("کتابخانه قرآن کریم",18,gold,true));
-            page.addView(txt("این بخش برای نمایش سوره‌ها و متن کامل قرآن در نظر گرفته شده است. متن کامل قرآن در این نسخه به‌صورت آفلاین افزوده نشده؛ بنابراین متن ناقص یا ساختگی نمایش داده نمی‌شود.",15,text(),false));
+            page.addView(txt("کتابخانه آفلاین قرآن در حال آماده‌سازی است. در این نسخه متن کامل سوره‌ها در دسترس نیست و برای جلوگیری از نمایش متن ناقص، فعلاً فقط معرفی بخش نمایش داده می‌شود.",15,text(),false));
+            page.addView(txt("منبع متن معیار برای نسخه بعدی: پروژهٔ تنزیل؛ متن عثمانی باید بدون تغییر و با حفظ مجوز و ارجاع منتشر شود.",12,text(),false));
             String[] suras={"الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس"};
             for(String x:suras)action("۞",x,"فهرست سوره‌ها؛ متن کامل در نسخه بعدی",()->toast("متن این سوره هنوز به کتابخانه آفلاین افزوده نشده است."));
         }else if(title.contains("نهج")){
@@ -284,7 +286,7 @@ public class MainActivity extends Activity {
             page.addView(txt("مجموعه دعاهای امام سجاد (ع). برای حفظ امانت، متن کامل دعاها تا زمان افزودن نسخه معتبر آفلاین به‌صورت کامل‌نما ارائه نشده است.",15,text(),false));
             for(int i=1;i<=54;i++){final int n=i;action("۞","دعای "+i,"صحیفه سجادیه",()->toast("متن کامل دعای "+n+" هنوز به برنامه افزوده نشده است."));}
         }else{
-            page.addView(txt("این بخش در حال تکمیل است.",15,text(),false));
+            page.addView(txt("این قابلیت هنوز فعال نشده است و در به‌روزرسانی‌های بعدی ارائه می‌شود.",15,text(),false));
         }
         addBack();
     }
@@ -317,14 +319,13 @@ public class MainActivity extends Activity {
         super.onActivityResult(req,res,data);if(res!=RESULT_OK||data==null)return;
         Uri uri=data.getData();if(uri==null)return;
         try{
-            getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);
             File f=new File(getFilesDir(),req==PICK_ARABIC?"user_arabic_font.ttf":"user_ui_font.ttf");
             try(InputStream in=getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(f)){
                 byte[] buf=new byte[8192];int n;while((n=in.read(buf))>0)out.write(buf,0,n);
             }
             Typeface face=Typeface.createFromFile(f);
             if(req==PICK_ARABIC){arabicFace=face;getSharedPreferences(PREF,0).edit().putString("arabic_path",f.getAbsolutePath()).apply();}
-            else{uiFace=face;getSharedPreferences(PREF,0).edit().putString("ui_path",f.getAbsolutePath()).apply();}
+            else{uiFace=face;titleFace=face;getSharedPreferences(PREF,0).edit().putString("ui_path",f.getAbsolutePath()).apply();}
             toast("فونت با موفقیت اعمال شد.");settings();
         }catch(Exception e){toast("فایل فونت معتبر نیست یا قابل خواندن نیست.");}
     }
@@ -402,7 +403,9 @@ public class MainActivity extends Activity {
         return new int[]{jy,jm,jd};
     }
     private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_LONG).show();}
-    @Override public void onBackPressed(){if(scrolling){scrolling=false;handler.removeCallbacks(scrollTask);}home();}
+    @Override public void onBackPressed(){if(scrolling){scrolling=false;if(scrollTask!=null)handler.removeCallbacks(scrollTask);}home();}
+    @Override protected void onPause(){super.onPause();if(scrolling){scrolling=false;if(scrollTask!=null)handler.removeCallbacks(scrollTask);}}
+    @Override protected void onDestroy(){activityDestroyed=true;scrolling=false;if(scrollTask!=null)handler.removeCallbacks(scrollTask);handler.removeCallbacksAndMessages(null);super.onDestroy();}
 
     private class AnimatedBackdrop extends View{
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);long start=System.currentTimeMillis();
