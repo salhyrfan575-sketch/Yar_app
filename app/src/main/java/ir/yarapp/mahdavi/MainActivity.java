@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
     private int green=Color.rgb(17,83,61), gold=Color.rgb(210,174,91);
     private boolean dark;
     private float arabicSize=28f, persianSize=16f;
-    private Typeface arabicFace=Typeface.DEFAULT, uiFace=Typeface.DEFAULT;
+    private Typeface arabicFace=Typeface.DEFAULT, uiFace=Typeface.DEFAULT, titleFace=Typeface.DEFAULT;
     private Handler handler=new Handler();
     private Runnable scrollTask;
     private ScrollView readingScroll;
@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
         dark=p.getBoolean("dark",false);
         arabicSize=p.getFloat("arabic_size",28f);
         persianSize=p.getFloat("persian_size",16f);
+        loadBundledFonts();
         loadSavedFonts();
         applyBars();
         home();
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.BLACK);
         if(Build.VERSION.SDK_INT>=29)getWindow().getDecorView().setSystemUiVisibility(dark?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
-    private void loadSavedFonts(){
+    private void loadBundledFonts(){\n        try{uiFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}\n        try{titleFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}\n        try{arabicFace=Typeface.createFromAsset(getAssets(),"fonts/qurantaha.ttf");}catch(Exception ignored){}\n    }\n    private void loadSavedFonts(){
         android.content.SharedPreferences p=getSharedPreferences(PREF,0);
         String a=p.getString("arabic_path",null),u=p.getString("ui_path",null);
         try{if(a!=null)arabicFace=Typeface.createFromFile(a);}catch(Exception ignored){}
@@ -56,7 +57,7 @@ public class MainActivity extends Activity {
     private TextView txt(String s,float size,int color,boolean bold){
         TextView v=new TextView(this);v.setText(s);v.setTextSize(size);v.setTextColor(color);
         v.setGravity(Gravity.CENTER);v.setTextDirection(View.TEXT_DIRECTION_RTL);
-        v.setTypeface(uiFace,bold?Typeface.BOLD:Typeface.NORMAL);v.setPadding(12,10,12,10);
+        v.setTypeface(bold?titleFace:uiFace,Typeface.NORMAL);v.setPadding(12,10,12,10);
         return v;
     }
     private GradientDrawable shape(int color,int radius){
@@ -275,7 +276,7 @@ public class MainActivity extends Activity {
         sizeControl("اندازه فونت عربی",true);sizeControl("اندازه فونت فارسی",false);
         action("Aa","فونت متن‌های عربی","انتخاب فایل TTF/OTF از گوشی",()->pickFont(PICK_ARABIC));
         action("آ","فونت تیترها و متن اصلی","انتخاب قلم رابط کاربری",()->pickFont(PICK_UI));
-        page.addView(txt("قلم IRAmir در این نسخه به‌صورت پیش‌فرض ضمیمه نشده، چون فایل اصلی فونت در مخزن موجود نیست. با انتخاب فایل فونت از گوشی می‌توان آن را اعمال کرد.",13,text(),false));
+        page.addView(txt("فونت‌های پیش‌فرض برنامه همراه نصب قرار می‌گیرند. در صورت تمایل می‌توانید قلم دلخواه خود را نیز از حافظه گوشی انتخاب کنید.",13,text(),false));
         page.addView(txt("امنیت و حریم خصوصی",17,gold,true));
         page.addView(txt("برنامه بدون حساب کاربری و بدون ارسال اطلاعات شخصی به سرور طراحی شده است. تنظیمات و قلم‌های انتخابی فقط در حافظهٔ داخلی همین دستگاه ذخیره می‌شوند. برای فایل‌گزینی از انتخاب‌گر امن اندروید استفاده می‌شود.",13,text(),false));
         addBack();
