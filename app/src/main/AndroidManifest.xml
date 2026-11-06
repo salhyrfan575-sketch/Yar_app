@@ -4,7 +4,7 @@
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:label="یار مهدوی"
-        android:icon="@drawable/ic_yar"
+        android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
