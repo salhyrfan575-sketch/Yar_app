@@ -368,7 +368,8 @@ public class MainActivity extends Activity {
         page.addView(txt("یادداشت: این برگردان، ترجمهٔ اختصاصی برنامه است و به آیت‌الله مکارم شیرازی یا مترجم دیگری نسبت داده نمی‌شود.",12,text(),false));
         addBack();
     }
-\n    private void simple(String title){
+
+    private void simple(String title){
         if(title.contains("نشان‌شده")){showFavorites();return;}
         if(title.contains("ختم قرآن")){readingPlan();return;}
         if(title.contains("درباره")){aboutPage();return;}
