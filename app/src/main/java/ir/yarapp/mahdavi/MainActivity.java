@@ -29,6 +29,9 @@ public class MainActivity extends Activity {
     private boolean scrolling=false;
     private int scrollDelay=35;
     private String currentPrayer="دعای عهد";
+    private static final String FAVS="offline_favorites";
+    private static final String NOTES="offline_notes";
+    private static final String LAST_READING="last_reading";
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
@@ -98,10 +101,15 @@ public class MainActivity extends Activity {
         outer.addView(page); setContentView(outer);
         // Header inspired by the supplied reference
         LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(18,8,18,8);
-        TextView mail=txt("✉",27,text(),false),brand=txt("وَالعَصر",25,gold,true),headset=txt("♧",27,text(),false);
+        TextView mail=txt("⌕",29,text(),true),brand=txt("وَالعَصر",25,gold,true),headset=txt("☆",27,text(),true);
+        mail.setOnClickListener(v->searchOffline());headset.setOnClickListener(v->showFavorites());
         top.addView(mail,new LinearLayout.LayoutParams(48,64));
         LinearLayout.LayoutParams center=new LinearLayout.LayoutParams(0,64,1);top.addView(brand,center);
         top.addView(headset,new LinearLayout.LayoutParams(48,64));page.addView(top);
+        TextView searchBar=txt("⌕   جست‌وجو در بخش‌های آفلاین برنامه",14,text(),false);
+        searchBar.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);searchBar.setBackground(shape(card(),22));
+        LinearLayout.LayoutParams searchLp=new LinearLayout.LayoutParams(-1,52);searchLp.setMargins(14,0,14,12);page.addView(searchBar,searchLp);
+        searchBar.setOnClickListener(v->searchOffline());
         FrameLayout hero=new FrameLayout(this);
         hero.setBackground(shape(0xff159f98,0));hero.setClipToOutline(true);
         AnimatedBackdrop backdrop=new AnimatedBackdrop();hero.addView(backdrop,new FrameLayout.LayoutParams(-1,238));
@@ -157,8 +165,9 @@ public class MainActivity extends Activity {
     }
     private void addMenuTile(LinearLayout menu,String icon,String title,Runnable run){
         LinearLayout tile=new LinearLayout(this);tile.setOrientation(LinearLayout.VERTICAL);tile.setGravity(Gravity.CENTER);tile.setPadding(2,5,2,2);
-        TextView symbol=txt(icon,29,Color.WHITE,true);symbol.setBackground(shape(0xff20a9a1,22));
-        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(74,74);tile.addView(symbol,ip);
+        TextView symbol=txt(icon,31,0xffffe7ad,true);
+        GradientDrawable badge=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff287c67,0xff123e35,0xff092820});badge.setCornerRadius(23);badge.setStroke(1,0xffb99a59);symbol.setBackground(badge);symbol.setElevation(7);
+        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(68,68);tile.addView(symbol,ip);
         TextView caption=txt(title,12,text(),false);caption.setPadding(0,5,0,2);tile.addView(caption);
         tile.setOnClickListener(v->run.run());
         LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,112,1);tp.setMargins(3,0,3,0);menu.addView(tile,tp);
@@ -185,6 +194,7 @@ public class MainActivity extends Activity {
         page=column(); page.setPadding(16,16,16,24); page.setBackgroundColor(bg());
         outer.addView(page); setContentView(outer); applyBars();
         TextView h=txt(name,22,Color.WHITE,true); h.setBackground(shape(green,25)); page.addView(h);
+        getSharedPreferences(PREF,0).edit().putString(LAST_READING,name).apply();
         page.addView(txt("متن عربی و ترجمهٔ فارسی",14,gold,true));
         String[][] parts=prayerData(name);
         for(String[] pair:parts){
@@ -198,6 +208,9 @@ public class MainActivity extends Activity {
         }
         LinearLayout controls=column(); controls.setPadding(12,12,12,12);
         controls.addView(txt("ابزار مطالعه",16,text(),true));
+        controls.addView(button(isFavorite(name)?"★ حذف از نشان‌شده‌ها":"☆ افزودن به نشان‌شده‌ها",()->{toggleFavorite(name);reader(name);}));
+        controls.addView(button("یادداشت شخصی برای این متن",()->editNote(name)));
+        controls.addView(button("اشتراک‌گذاری عنوان",()->shareText(name)));
         controls.addView(button(scrolling?"توقف اسکرول":"شروع اسکرول خودکار",()->toggleScroll()));
         SeekBar speed=new SeekBar(this); speed.setMax(90); speed.setProgress(35);
         controls.addView(txt("سرعت اسکرول",13,text(),false)); controls.addView(speed);
@@ -267,7 +280,54 @@ public class MainActivity extends Activity {
         b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(green));b.setOnClickListener(v->r.run());return b;
     }
     private void addBack(){Button b=button("بازگشت",()->home());page.addView(b);}
+    private boolean isFavorite(String value){return getSharedPreferences(PREF,0).getStringSet(FAVS,new HashSet<String>()).contains(value);}
+    private void toggleFavorite(String value){
+        android.content.SharedPreferences p=getSharedPreferences(PREF,0);
+        Set<String> set=new HashSet<>(p.getStringSet(FAVS,new HashSet<String>()));
+        if(set.contains(value))set.remove(value);else set.add(value);
+        p.edit().putStringSet(FAVS,set).apply();toast(set.contains(value)?"به نشان‌شده‌ها اضافه شد":"از نشان‌شده‌ها حذف شد");
+    }
+    private void showFavorites(){
+        base("نشان‌شده‌ها");
+        Set<String> set=new TreeSet<>(getSharedPreferences(PREF,0).getStringSet(FAVS,new HashSet<String>()));
+        if(set.isEmpty())page.addView(txt("هنوز مطلبی نشان نشده است. هنگام مطالعه از گزینهٔ افزودن به نشان‌شده‌ها استفاده کنید.",15,text(),false));
+        for(String item:set)action("★",item,"بازکردن متن ذخیره‌شده",()->reader(item));
+        addBack();
+    }
+    private void editNote(String key){
+        EditText input=new EditText(this);input.setMinLines(3);input.setGravity(Gravity.RIGHT|Gravity.TOP);
+        input.setText(getSharedPreferences(PREF,0).getString(NOTES+key,""));
+        new AlertDialog.Builder(this).setTitle("یادداشت شخصی").setView(input)
+            .setPositiveButton("ذخیره",(d,w)->{getSharedPreferences(PREF,0).edit().putString(NOTES+key,input.getText().toString()).apply();toast("یادداشت روی همین دستگاه ذخیره شد.");})
+            .setNegativeButton("انصراف",null).show();
+    }
+    private void shareText(String value){
+        Intent i=new Intent(Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(Intent.EXTRA_TEXT,value);
+        startActivity(Intent.createChooser(i,"اشتراک‌گذاری"));
+    }
+    private void searchOffline(){
+        LinearLayout box=column();EditText q=new EditText(this);q.setSingleLine(true);q.setHint("عبارت موردنظر را بنویسید");q.setGravity(Gravity.RIGHT);box.addView(q);
+        TextView results=txt("جست‌وجو در دعاهای موجود، احادیث و عنوان بخش‌ها",13,text(),false);box.addView(results);
+        q.addTextChangedListener(new android.text.TextWatcher(){
+            public void beforeTextChanged(CharSequence s,int st,int c,int a){}
+            public void onTextChanged(CharSequence s,int st,int before,int count){
+                String needle=s.toString().trim().toLowerCase(new Locale("fa"));
+                if(needle.length()<2){results.setText("برای جست‌وجو دست‌کم دو نویسه وارد کنید.");return;}
+                StringBuilder out=new StringBuilder();
+                String[] names={"دعای عهد","دعای فرج","دعای سلامتی امام زمان"};
+                for(String name:names){for(String[] pair:prayerData(name))if(pair[0].contains(needle)||pair[1].toLowerCase(new Locale("fa")).contains(needle)){out.append("• ").append(name).append("\n").append(pair[1]).append("\n\n");break;}}
+                String[][] hs={{"أَكْثِرُوا الدُّعَاءَ بِتَعْجِيلِ الْفَرَجِ","برای تعجیل فرج بسیار دعا کنید."},{"وَأَمَّا الْحَوَادِثُ الْوَاقِعَةُ فَارْجِعُوا فِيهَا إِلَى رُوَاةِ حَدِيثِنَا","در رخدادهای تازه به راویان حدیث ما مراجعه کنید."},{"إِنَّا غَيْرُ مُهْمِلِينَ لِمُرَاعَاتِكُمْ وَلَا نَاسِينَ لِذِكْرِكُمْ","ما در رسیدگی به حال شما کوتاهی نمی‌کنیم و یاد شما را از خاطر نمی‌بریم."}};
+                for(String[] h:hs)if(h[0].contains(needle)||h[1].contains(needle))out.append("• حدیث مهدوی\n").append(h[1]).append("\n\n");
+                results.setText(out.length()==0?"نتیجه‌ای در محتوای فعلی برنامه پیدا نشد.":out.toString());
+            }
+            public void afterTextChanged(android.text.Editable e){}
+        });
+        new AlertDialog.Builder(this).setTitle("جست‌وجوی آفلاین").setView(box).setPositiveButton("بستن",null).show();
+    }
     private void simple(String title){
+        if(title.contains("نشان‌شده")){showFavorites();return;}
+        if(title.contains("ختم قرآن")){readingPlan();return;}
+        if(title.contains("درباره")){aboutPage();return;}
         base(title);
         if(title.contains("قرآن")){
             page.addView(txt("کتابخانه قرآن کریم",18,gold,true));
@@ -288,6 +348,24 @@ public class MainActivity extends Activity {
         }else{
             page.addView(txt("این قابلیت هنوز فعال نشده است و در به‌روزرسانی‌های بعدی ارائه می‌شود.",15,text(),false));
         }
+        addBack();
+    }
+    private void readingPlan(){
+        base("برنامه ختم قرآن");
+        android.content.SharedPreferences p=getSharedPreferences(PREF,0);
+        int done=p.getInt("khatm_done",0);
+        page.addView(txt("برنامهٔ شخصی ختم قرآن (ذخیره‌شده فقط روی این دستگاه)",14,text(),false));
+        TextView count=txt(done+" از ۶۰ حزب",24,gold,true);page.addView(count);
+        SeekBar bar=new SeekBar(this);bar.setMax(60);bar.setProgress(done);page.addView(bar);
+        bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar b,int v,boolean u){count.setText(v+" از ۶۰ حزب");}public void onStartTrackingTouch(SeekBar b){}public void onStopTrackingTouch(SeekBar b){p.edit().putInt("khatm_done",b.getProgress()).apply();}});
+        page.addView(button("ثبت پیشرفت امروز",()->{p.edit().putInt("khatm_done",bar.getProgress()).apply();toast("پیشرفت ختم ذخیره شد.");}));
+        addBack();
+    }
+    private void aboutPage(){
+        base("درباره یار مهدوی");
+        page.addView(txt("یار مهدوی؛ همراه آفلاین مطالعه و یادآوری معارف مهدوی",18,gold,true));
+        page.addView(txt("اطلاعات شخصی، نشان‌شده‌ها، یادداشت‌ها و تنظیمات در حافظهٔ همین دستگاه نگهداری می‌شوند. بخش‌های وابسته به سرور در این نسخه غیرفعال‌اند.",14,text(),false));
+        page.addView(txt("توجه: محتوای کتابخانه‌ای که هنوز به‌صورت متن معتبر و کامل در بسته نصب قرار نگرفته، نباید کامل تلقی شود. نسخهٔ محتوایی باید پس از تطبیق با منبع معتبر تکمیل شود.",13,text(),false));
         addBack();
     }
     private void settings(){
@@ -413,7 +491,7 @@ public class MainActivity extends Activity {
         private void fill(Canvas c,int color,float l,float t,float r,float b){p.setColor(color);c.drawRect(l,t,r,b,p);}
         @Override protected void onDraw(Canvas c){
             super.onDraw(c);float w=getWidth(),h=getHeight();long tm=System.currentTimeMillis()-start;
-            p.setShader(new LinearGradient(0,0,w,h,0xff087e7a,0xff21b0a4,Shader.TileMode.CLAMP));c.drawRect(0,0,w,h,p);p.setShader(null);
+            p.setShader(new LinearGradient(0,0,w,h,0xff061f24,0xff176b5a,Shader.TileMode.CLAMP));c.drawRect(0,0,w,h,p);p.setShader(null);
             // Soft moving light beams
             for(int i=0;i<4;i++){float x=(float)((i*w/3.0)+(Math.sin(tm/2600.0+i)*28));p.setShader(new LinearGradient(x,0,x+95,h,0x22ffffff,0x00ffffff,Shader.TileMode.CLAMP));c.drawRect(x-50,0,x+95,h,p);p.setShader(null);}
             // Distant skyline and mosque domes
