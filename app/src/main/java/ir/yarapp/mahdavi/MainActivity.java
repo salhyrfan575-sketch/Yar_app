@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
             {"تقویم","زندگی‌نامه امام","احادیث","مفاتیح‌الجنان"},
             {"نشان‌شده‌ها","ختم قرآن","تنظیمات","درباره برنامه"}};
         String[][] icons={{"۞","۩","❖","❀"},{"▦","☾","✦","✧"},{"☆","۞","⚙","ⓘ"}};
-        Runnable[][] actions={{()->prayers(),()->simple("قرآن کریم"),()->simple("نهج‌البلاغه"),()->simple("صحیفه سجادیه")},
+        Runnable[][] actions={{()->prayers(),()->quranPage(),()->simple("نهج‌البلاغه"),()->simple("صحیفه سجادیه")},
             {()->calendarPage(),()->biography(),()->hadiths(),()->prayers()},
             {()->simple("نشان‌شده‌ها"),()->simple("ختم قرآن"),()->settings(),()->simple("درباره برنامه")}};
         for(int r=0;r<labels.length;r++){
@@ -335,7 +335,40 @@ public class MainActivity extends Activity {
         });
         new AlertDialog.Builder(this).setTitle("جست‌وجوی آفلاین").setView(box).setPositiveButton("بستن",null).show();
     }
-    private void simple(String title){
+
+    private void quranPage(){
+        base("قرآن کریم");
+        page.addView(txt("کتابخانهٔ قرآن؛ متن عربی و ترجمهٔ فارسی اختصاصی",14,gold,true));
+        action("۞","سورهٔ حمد","۷ آیه؛ متن عربی و ترجمهٔ فارسی",()->quranReader(1));
+        action("۞","سورهٔ بقره","۲۸۶ آیه؛ در حال آماده‌سازی محتوای کامل",()->toast("ترجمهٔ اختصاصی سورهٔ بقره هنوز کامل نشده است؛ برای جلوگیری از نمایش متن ناقص، فعلاً باز نمی‌شود."));
+        addBack();
+    }
+    private void quranReader(int surah){
+        if(surah!=1){toast("این سوره هنوز آماده نشده است.");return;}
+        currentPrayer="سورهٔ حمد";
+        ScrollView outer=new ScrollView(this);readingScroll=outer;
+        page=column();page.setPadding(16,16,16,24);page.setBackgroundColor(bg());outer.addView(page);setContentView(outer);applyBars();
+        TextView h=txt("سورهٔ حمد",22,Color.WHITE,true);h.setBackground(shape(green,25));page.addView(h);
+        page.addView(txt("ترجمهٔ فارسی اختصاصی — برگردان مفهومی آیه‌به‌آیه",13,gold,true));
+        String[][] verses={
+            {"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ","به نام خداوند بخشندهٔ مهربان."},
+            {"الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ","ستایش ویژهٔ خداوندی است که پروردگار همهٔ جهانیان است."},
+            {"الرَّحْمَٰنِ الرَّحِيمِ","بخشنده و مهربان است."},
+            {"مَالِكِ يَوْمِ الدِّينِ","فرمانروای روز جزاست."},
+            {"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ","تنها تو را می‌پرستیم و تنها از تو یاری می‌جوییم."},
+            {"اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ","ما را به راه راست هدایت کن."},
+            {"صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ","راه کسانی که به آنان نعمت بخشیدی؛ نه راه کسانی که گرفتار خشم تو شده‌اند و نه راه گمراهان."}
+        };
+        for(int i=0;i<verses.length;i++){
+            LinearLayout box=column();box.setPadding(12,10,12,10);
+            box.addView(txt("آیهٔ "+(i+1),12,gold,true));
+            TextView ar=txt(verses[i][0],arabicSize,text(),true);ar.setTypeface(arabicFace,Typeface.NORMAL);ar.setGravity(Gravity.RIGHT);ar.setLineSpacing(8,lineSpacingMultiplier);box.addView(ar);
+            TextView fa=txt(verses[i][1],persianSize,text(),false);fa.setGravity(Gravity.RIGHT);fa.setLineSpacing(5,lineSpacingMultiplier);box.addView(fa);addCard(box);
+        }
+        page.addView(txt("یادداشت: این برگردان، ترجمهٔ اختصاصی برنامه است و به آیت‌الله مکارم شیرازی یا مترجم دیگری نسبت داده نمی‌شود.",12,text(),false));
+        addBack();
+    }
+\n    private void simple(String title){
         if(title.contains("نشان‌شده")){showFavorites();return;}
         if(title.contains("ختم قرآن")){readingPlan();return;}
         if(title.contains("درباره")){aboutPage();return;}
