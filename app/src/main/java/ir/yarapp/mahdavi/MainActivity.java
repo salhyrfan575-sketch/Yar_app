@@ -86,50 +86,91 @@ public class MainActivity extends Activity {
     private void home(){
         applyBars();
         ScrollView outer=new ScrollView(this);
-        page=column(); page.setPadding(12,12,12,22); page.setBackgroundColor(bg());
+        outer.setFillViewport(true);
+        page=column(); page.setPadding(0,0,0,18); page.setBackgroundColor(dark?bg():Color.WHITE);
         outer.addView(page); setContentView(outer);
+        // Header inspired by the supplied reference
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(18,8,18,8);
+        TextView mail=txt("✉",27,text(),false),brand=txt("وَالعَصر",25,gold,true),headset=txt("♧",27,text(),false);
+        top.addView(mail,new LinearLayout.LayoutParams(48,64));
+        LinearLayout.LayoutParams center=new LinearLayout.LayoutParams(0,64,1);top.addView(brand,center);
+        top.addView(headset,new LinearLayout.LayoutParams(48,64));page.addView(top);
         FrameLayout hero=new FrameLayout(this);
-        hero.setBackground(shape(green,28)); hero.setClipToOutline(true);
-        AnimatedBackdrop backdrop=new AnimatedBackdrop();
-        hero.addView(backdrop,new FrameLayout.LayoutParams(-1,460));
-        LinearLayout intro=column(); intro.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL);
-        intro.setPadding(14,30,14,12);
-        intro.addView(txt("یــار مهدوی",25,Color.WHITE,true));
-        intro.addView(txt("السَّلامُ عَلَیْکَ یا صاحِبَ الزَّمان",20,Color.WHITE,true));
-        intro.addView(txt("به یاد امام عصر (عج)",14,0xffe7eadc,false));
-        hero.addView(intro,new FrameLayout.LayoutParams(-1,-1));
-        LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,460);
-        hp.setMargins(0,0,0,12); page.addView(hero,hp);
-
-        HorizontalScrollView menuScroll=new HorizontalScrollView(this);
-        menuScroll.setHorizontalScrollBarEnabled(false);
-        LinearLayout menu=new LinearLayout(this); menu.setOrientation(LinearLayout.HORIZONTAL);
-        menu.setGravity(Gravity.CENTER_VERTICAL);
-        addMenuTile(menu,"۞","دعاها",()->prayers());
-        addMenuTile(menu,"✧","روایات",()->simple("روایات"));
-        addMenuTile(menu,"☾","زندگینامه",()->simple("زندگینامه امام زمان (عج)"));
-        addMenuTile(menu,"▤","مقالات",()->simple("مقالات"));
-        addMenuTile(menu,"▦","تقویم",()->calendarPage());
-        addMenuTile(menu,"⚙","تنظیمات",()->settings());
-        menuScroll.addView(menu); page.addView(menuScroll);
-        LinearLayout bottom=column(); bottom.setPadding(12,10,12,10);
-        bottom.addView(txt("پرکاربرد",16,text(),true));
-        bottom.addView(txt("این بخش آزمایشی است و در به‌روزرسانی‌های بعدی فعال می‌شود.",12,text(),false));
-        addCard(bottom);
+        hero.setBackground(shape(0xff159f98,0));hero.setClipToOutline(true);
+        AnimatedBackdrop backdrop=new AnimatedBackdrop();hero.addView(backdrop,new FrameLayout.LayoutParams(-1,238));
+        LinearLayout dateInfo=column();dateInfo.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);dateInfo.setPadding(18,10,18,10);
+        TextView weekday=txt(todayWeekday(),17,Color.WHITE,true);weekday.setGravity(Gravity.RIGHT);
+        TextView bigDay=txt(todayJalaliDay(),76,Color.WHITE,true);bigDay.setGravity(Gravity.RIGHT);
+        TextView month=txt(todayJalaliMonth()+"  "+todayJalaliYear(),24,Color.WHITE,true);month.setGravity(Gravity.RIGHT);
+        TextView greg=txt(new SimpleDateFormat("d MMMM yyyy",new Locale("fa")).format(new Date()),16,Color.WHITE,true);greg.setGravity(Gravity.LEFT);
+        dateInfo.addView(weekday);dateInfo.addView(bigDay);dateInfo.addView(month);dateInfo.addView(greg);
+        hero.addView(dateInfo,new FrameLayout.LayoutParams(-1,-1,Gravity.RIGHT|Gravity.CENTER_VERTICAL));
+        page.addView(hero,new LinearLayout.LayoutParams(-1,238));
+        // Four-column square shortcut grid
+        String[][] labels={{"قرآن کریم","نهج البلاغه","کلیات مفاتیح","صحیفه سجادیه"},
+            {"اذان‌گو","هشدارها","قبله‌نما","تقویم"},
+            {"نشان‌شده‌ها","ختم قرآن","زندگینامه","درباره برنامه"}};
+        String[][] icons={{"۞","❖","✧","❀"},{"⌂","◷","◉","▦"},{"▮","۞","☾","ⓘ"}};
+        Runnable[][] actions={{()->simple("قرآن کریم"),()->simple("نهج البلاغه"),()->prayers(),()->simple("صحیفه سجادیه")},
+            {()->simple("اذان‌گو"),()->simple("هشدارها"),()->simple("قبله‌نما"),()->calendarPage()},
+            {()->simple("نشان‌شده‌ها"),()->simple("ختم قرآن"),()->biography(),()->simple("درباره برنامه")}};
+        for(int r=0;r<labels.length;r++){
+            LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER);row.setPadding(5,12,5,4);
+            for(int c=0;c<4;c++)addMenuTile(row,icons[r][c],labels[r][c],actions[r][c]);
+            page.addView(row);
+        }
+        View divider=new View(this);divider.setBackgroundColor(0xffe5e5e5);
+        LinearLayout.LayoutParams dp=new LinearLayout.LayoutParams(-1,1);dp.topMargin=10;page.addView(divider,dp);
+        LinearLayout day=column();day.setPadding(16,12,16,8);
+        LinearLayout dayHead=new LinearLayout(this);dayHead.setGravity(Gravity.CENTER_VERTICAL);
+        TextView dayTitle=txt("برنامه امروز",19,text(),true);dayTitle.setGravity(Gravity.RIGHT);
+        dayHead.addView(dayTitle,new LinearLayout.LayoutParams(0,-2,1));
+        TextView date=txt(jalaliToday(),13,0xff159f98,true);dayHead.addView(date);
+        day.addView(dayHead);
+        TextView focus=txt("پیمان امروز: یک قدم برای نزدیک‌تر شدن به امام زمان (عج)",14,text(),false);
+        focus.setBackground(shape(0xffe7f5f3,14));day.addView(focus);
+        day.addView(button("مطالعه دعای عهد",()->reader("دعای عهد")));
+        page.addView(day);
+        // Bottom navigation bar
+        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(4,10,4,4);
+        String[] navLabels={"خانه","قرآن","پرکاربردها","کتابخانه","تنظیمات"};
+        String[] navIcons={"⌂","▤","▦","▣","⚙"};
+        for(int i=0;i<navLabels.length;i++){
+            final int ix=i;LinearLayout item=column();item.setGravity(Gravity.CENTER);
+            item.addView(txt(navIcons[i],23,i==0?0xff159f98:0xff9da5a2,true));
+            item.addView(txt(navLabels[i],11,i==0?0xff159f98:0xff9da5a2,false));
+            item.setOnClickListener(v->{if(ix==0)home();else if(ix==4)settings();else if(ix==1)simple("قرآن");else if(ix==2)simple("پرکاربردها");else simple("کتابخانه");});
+            nav.addView(item,new LinearLayout.LayoutParams(0,66,1));
+        }
+        page.addView(nav);
+    }
+    private String[] jalaliParts(){Calendar c=Calendar.getInstance();return new String[]{String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[0]),String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[1]),String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[2])};}
+    private String todayJalaliYear(){return jalaliParts()[0];}
+    private String todayJalaliMonth(){String[] m={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"};return m[Integer.parseInt(jalaliParts()[1])-1];}
+    private String todayJalaliDay(){return jalaliParts()[2];}
+    private String todayWeekday(){return new SimpleDateFormat("EEEE",new Locale("fa")).format(new Date());}
+    private void biography(){
+        base("زندگی‌نامه امام زمان (عج)");
+        page.addView(txt("حضرت مهدی، امام دوازدهم شیعیان",19,gold,true));
+        String[][] items={
+            {"ولادت","بنابر باور مشهور شیعه، حضرت محمد بن حسن عسکری (عج) در نیمه شعبان سال ۲۵۵ هجری قمری در سامرا دیده به جهان گشودند. پدر ایشان امام حسن عسکری (ع) و مادرشان نرجس خاتون است."},
+            {"دوران کودکی","به دلیل شرایط سیاسی و مراقبت حکومت عباسی، ولادت و زندگی ایشان از دید عموم پنهان نگه داشته شد. گروهی از نزدیکان و خواص، ایشان را زیارت کردند."},
+            {"آغاز امامت","پس از شهادت امام حسن عسکری (ع) در سال ۲۶۰ هجری قمری، امامت حضرت مهدی (عج) آغاز شد."},
+            {"غیبت صغری","از سال ۲۶۰ تا ۳۲۹ هجری قمری، ارتباط شیعیان با امام از طریق چهار نایب خاص برقرار بود: عثمان بن سعید، محمد بن عثمان، حسین بن روح و علی بن محمد سمری."},
+            {"غیبت کبری","با درگذشت نایب چهارم در سال ۳۲۹ هجری قمری، غیبت کبری آغاز شد. در این دوران، شیعیان برای شناخت احکام و اداره امور دینی به عالمان واجد شرایط مراجعه می‌کنند."},
+            {"انتظار و ظهور","در باور شیعه، امام مهدی (عج) زنده‌اند و به اذن خداوند از دیدگان پنهان هستند. ظهور ایشان با گسترش عدالت، مبارزه با ستم و برپایی حق همراه خواهد بود."}
+        };
+        for(String[] it:items){LinearLayout box=column();box.setPadding(12,8,12,8);box.addView(txt(it[0],17,0xff159f98,true));TextView body=txt(it[1],14,text(),false);body.setGravity(Gravity.RIGHT);body.setLineSpacing(5,1.15f);box.addView(body);addCard(box);}
+        page.addView(txt("یادداشت: تاریخ‌ها و جزئیات زندگی امام در منابع تاریخی و حدیثی با تفاوت‌هایی نقل شده‌اند؛ این متن خلاصه‌ای از روایت مشهور امامیه است.",12,text(),false));
+        addBack();
     }
     private void addMenuTile(LinearLayout menu,String icon,String title,Runnable run){
-        LinearLayout tile=new LinearLayout(this); tile.setOrientation(LinearLayout.VERTICAL);
-        tile.setGravity(Gravity.CENTER); tile.setPadding(5,7,5,5);
-        tile.setBackground(shape(card(),17)); tile.setElevation(3);
-        TextView symbol=txt(icon,28,gold,true);
-        symbol.setBackground(shape(dark?0xff203c31:0xffedf3ed,13));
-        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(66,62);
-        tile.addView(symbol,ip);
-        TextView caption=txt(title,12,text(),true); caption.setPadding(2,5,2,2);
-        tile.addView(caption);
+        LinearLayout tile=new LinearLayout(this);tile.setOrientation(LinearLayout.VERTICAL);tile.setGravity(Gravity.CENTER);tile.setPadding(2,5,2,2);
+        TextView symbol=txt(icon,29,Color.WHITE,true);symbol.setBackground(shape(0xff20a9a1,22));
+        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(74,74);tile.addView(symbol,ip);
+        TextView caption=txt(title,12,text(),false);caption.setPadding(0,5,0,2);tile.addView(caption);
         tile.setOnClickListener(v->run.run());
-        LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(82,100);
-        tp.setMargins(4,0,4,0); menu.addView(tile,tp);
+        LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,112,1);tp.setMargins(3,0,3,0);menu.addView(tile,tp);
     }
     private void prayers(){
         base("دعاها و زیارات");
@@ -333,20 +374,24 @@ public class MainActivity extends Activity {
     @Override public void onBackPressed(){if(scrolling){scrolling=false;handler.removeCallbacks(scrollTask);}home();}
 
     private class AnimatedBackdrop extends View{
-        Paint p=new Paint(3);long start=System.currentTimeMillis();
+        Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);long start=System.currentTimeMillis();
         AnimatedBackdrop(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
+        private void fill(Canvas c,int color,float l,float t,float r,float b){p.setColor(color);c.drawRect(l,t,r,b,p);}
         @Override protected void onDraw(Canvas c){
-            super.onDraw(c);float w=getWidth(),h=getHeight();long t=System.currentTimeMillis()-start;
-            p.setShader(new LinearGradient(0,0,w,h,0xff0b382b,0xff17634b,Shader.TileMode.CLAMP));c.drawRect(0,0,w,h,p);p.setShader(null);
-            for(int i=0;i<7;i++){
-                float x=(float)((w*(i+1)/8.0)+Math.sin(t/1900.0+i)*22);
-                float y=(float)(h*(.18+i%3*.29)+Math.cos(t/2300.0+i)*13);
-                p.setColor(i%2==0?0x33ffffff:0x22d8bd78);p.setShadowLayer(28,0,0,0x557ee0b5);
-                c.drawCircle(x,y,24+(i%3)*13,p);p.clearShadowLayer();
-            }
-            p.setColor(0x22ffffff);p.setStrokeWidth(1.2f);
-            for(int i=0;i<5;i++){float y=(i+1)*h/6;c.drawLine(0,y,w,y+((i%2)*9),p);}
-            postInvalidateDelayed(50);
+            super.onDraw(c);float w=getWidth(),h=getHeight();long tm=System.currentTimeMillis()-start;
+            p.setShader(new LinearGradient(0,0,w,h,0xff087e7a,0xff21b0a4,Shader.TileMode.CLAMP));c.drawRect(0,0,w,h,p);p.setShader(null);
+            // Soft moving light beams
+            for(int i=0;i<4;i++){float x=(float)((i*w/3.0)+(Math.sin(tm/2600.0+i)*28));p.setShader(new LinearGradient(x,0,x+95,h,0x22ffffff,0x00ffffff,Shader.TileMode.CLAMP));c.drawRect(x-50,0,x+95,h,p);p.setShader(null);}
+            // Distant skyline and mosque domes
+            p.setColor(0x1b075d59);
+            for(int i=0;i<8;i++){float x=i*w/7f;float base=h*.83f;float bh=h*(.22f+(i%3)*.035f);c.drawRect(x-12,base-bh,x+16,base,p);c.drawCircle(x+2,base-bh,11,p);}
+            // central mosque silhouette
+            p.setColor(0x22065a56);float base=h*.86f;
+            c.drawRect(w*.30f,base-h*.22f,w*.70f,base,p);c.drawOval(w*.36f,base-h*.34f,w*.64f,base-h*.08f,p);
+            p.setColor(0x22065a56);c.drawRect(w*.48f,base-h*.52f,w*.52f,base-h*.22f,p);
+            Path dome=new Path();dome.moveTo(w*.48f,base-h*.52f);dome.quadTo(w*.50f,base-h*.64f,w*.52f,base-h*.52f);c.drawPath(dome,p);
+            // drifting glowing particles
+            for(int i=0;i<16;i++){float x=(float)((i*71+tm*(.008+i%3*.002))%(w+20));float y=(float)(h*(.12+(i*37%70)/100.0)+Math.sin(tm/900.0+i)*8);p.setColor(i%3==0?0x66fff0c2:0x44ffffff);p.setShadowLayer(10,0,0,0x55ffffff);c.drawCircle(x,y,2+(i%3),p);p.clearShadowLayer();}
+            postInvalidateDelayed(45);
         }
-    }
-}
+    }}
