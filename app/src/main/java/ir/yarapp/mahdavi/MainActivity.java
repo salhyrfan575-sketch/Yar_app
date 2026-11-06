@@ -189,10 +189,44 @@ public class MainActivity extends Activity {
     }
     private void calendarPage(){
         base("تقویم فارسی");
-        Calendar c=Calendar.getInstance();
-        page.addView(txt(jalaliToday(),27,gold,true));
-        page.addView(txt(new SimpleDateFormat("EEEE، d MMMM yyyy",new Locale("fa")).format(c.getTime()),16,text(),true));
-        page.addView(txt("تقویم روزانهٔ فارسی — نمایش تاریخ امروز دستگاه",13,text(),false));addBack();
+        Calendar now=Calendar.getInstance();
+        int[] today=gregorianToJalali(now.get(Calendar.YEAR),now.get(Calendar.MONTH)+1,now.get(Calendar.DAY_OF_MONTH));
+        int jy=today[0], jm=today[1], day=today[2];
+        String[] months={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"};
+        page.addView(txt(months[jm-1]+" "+jy,24,gold,true));
+        page.addView(txt("امروز: "+jalaliToday(),15,text(),true));
+        int[] first=jalaliToGregorian(jy,jm,1);
+        Calendar fc=Calendar.getInstance(); fc.clear(); fc.set(first[0],first[1]-1,first[2]);
+        int offset=fc.get(Calendar.DAY_OF_WEEK)%7;
+        int count=jalaliMonthLength(jy,jm);
+        String[] week={"ش","ی","د","س","چ","پ","ج"};
+        GridLayout grid=new GridLayout(this); grid.setColumnCount(7); grid.setUseDefaultMargins(true);
+        for(String w:week){ TextView cell=txt(w,13,gold,true); GridLayout.LayoutParams lp=new GridLayout.LayoutParams(); lp.width=0; lp.height=48; lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f); grid.addView(cell,lp); }
+        for(int i=0;i<offset+count;i++){
+            int number=i-offset+1; TextView cell=txt(i<offset?"":String.valueOf(number),15,text(),number==day);
+            if(i>=offset&&number==day) cell.setBackground(shape(green,16));
+            GridLayout.LayoutParams lp=new GridLayout.LayoutParams(); lp.width=0; lp.height=48; lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f); grid.addView(cell,lp);
+        }
+        addCard(grid);
+        page.addView(txt("هفته از شنبه آغاز می‌شود. تاریخ‌ها بر اساس هجری شمسی نمایش داده شده‌اند.",12,text(),false));
+        addBack();
+    }
+    private int jalaliMonthLength(int jy,int jm){
+        if(jm<=6)return 31; if(jm<=11)return 30;
+        int[] a=jalaliToGregorian(jy,12,1), b=jalaliToGregorian(jy+1,1,1);
+        Calendar x=Calendar.getInstance(), y=Calendar.getInstance();
+        x.clear(); x.set(a[0],a[1]-1,a[2]); y.clear(); y.set(b[0],b[1]-1,b[2]);
+        return (int)((y.getTimeInMillis()-x.getTimeInMillis())/86400000L);
+    }
+    private int[] jalaliToGregorian(int jy,int jm,int jd){
+        jy+=1595; int days=-355668+365*jy+(jy/33)*8+((jy%33+3)/4)+jd;
+        days+=(jm<7?(jm-1)*31:186+(jm-7)*30);
+        int gy=400*(days/146097); days%=146097;
+        if(days>36524){gy+=100*((--days)/36524);days%=36524;if(days>=365)days++;}
+        gy+=4*(days/1461);days%=1461;
+        if(days>365){gy+=(days-1)/365;days=(days-1)%365;}
+        int gd=days+1; int[] md={0,31,((gy%4==0&&gy%100!=0)||gy%400==0)?29:28,31,30,31,30,31,31,30,31,30,31};
+        int gm=1; while(gm<=12&&gd>md[gm]){gd-=md[gm];gm++;} return new int[]{gy,gm,gd};
     }
     private String jalaliToday(){
         Calendar c=Calendar.getInstance();int[] j=gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH));
