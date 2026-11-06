@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
     }
     private void action(String icon,String title,String sub,Runnable r){
         LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(14,8,14,8);
-        TextView ic=txt(icon,27,gold,true);row.addView(ic,new LinearLayout.LayoutParams(58,62));
+        TextView ic=txt(icon,27,gold,true);ic.setPadding(0,0,0,0);ic.setGravity(Gravity.CENTER);ic.setIncludeFontPadding(true);row.addView(ic,new LinearLayout.LayoutParams(58,62));
         LinearLayout labels=column();TextView t=txt(title,17,text(),true);t.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         TextView st=txt(sub,12,dark?0xffb6c8bc:0xff718078,false);st.setGravity(Gravity.RIGHT);
         labels.addView(t);labels.addView(st);row.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
@@ -100,8 +100,14 @@ public class MainActivity extends Activity {
         applyBars();
         ScrollView outer=new ScrollView(this);
         outer.setFillViewport(true);
-        page=column(); page.setPadding(0,0,0,18); page.setBackgroundColor(dark?bg():Color.WHITE);
-        outer.addView(page); setContentView(outer);
+        page=column(); page.setPadding(0,0,0,18); page.setBackgroundColor(dark?0xee0c1916:0xeef1f6f1);
+        outer.addView(page);
+        outer.setBackgroundColor(Color.TRANSPARENT);
+        FrameLayout homeRoot=new FrameLayout(this);
+        AnimatedBackdrop fullBackdrop=new AnimatedBackdrop();
+        homeRoot.addView(fullBackdrop,new FrameLayout.LayoutParams(-1,-1));
+        homeRoot.addView(outer,new FrameLayout.LayoutParams(-1,-1));
+        setContentView(homeRoot);
         // Header inspired by the supplied reference
         LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(18,8,18,8);
         TextView mail=txt("⌕",27,text(),true),brand=txt("وَالْعَصْرِ",25,gold,true),headset=txt("☾",25,text(),true);
