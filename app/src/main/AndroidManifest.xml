@@ -8,7 +8,7 @@
         android:roundIcon="@drawable/ic_yar"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@style/AppTheme">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
