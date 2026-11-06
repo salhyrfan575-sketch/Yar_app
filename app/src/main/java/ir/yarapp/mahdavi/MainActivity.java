@@ -84,24 +84,52 @@ public class MainActivity extends Activity {
         row.setOnClickListener(v->r.run());addCard(row);
     }
     private void home(){
-        applyBars();base("یــار مهدوی");
-        FrameLayout hero=new FrameLayout(this);hero.setClipToOutline(true);hero.setBackground(shape(green,30));
-        AnimatedBackdrop backdrop=new AnimatedBackdrop();hero.addView(backdrop,new FrameLayout.LayoutParams(-1,245));
-        LinearLayout intro=column();intro.setGravity(Gravity.CENTER);intro.setPadding(12,26,12,22);
+        applyBars();
+        ScrollView outer=new ScrollView(this);
+        page=column(); page.setPadding(12,12,12,22); page.setBackgroundColor(bg());
+        outer.addView(page); setContentView(outer);
+        FrameLayout hero=new FrameLayout(this);
+        hero.setBackground(shape(green,28)); hero.setClipToOutline(true);
+        AnimatedBackdrop backdrop=new AnimatedBackdrop();
+        hero.addView(backdrop,new FrameLayout.LayoutParams(-1,460));
+        LinearLayout intro=column(); intro.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL);
+        intro.setPadding(14,30,14,12);
+        intro.addView(txt("یــار مهدوی",25,Color.WHITE,true));
         intro.addView(txt("السَّلامُ عَلَیْکَ یا صاحِبَ الزَّمان",20,Color.WHITE,true));
-        intro.addView(txt("به یار مهدوی خوش آمدید",22,Color.WHITE,true));
-        intro.addView(txt("همراهی آرام در مسیر انتظار",14,0xffe2eadf,false));
-        hero.addView(intro,new FrameLayout.LayoutParams(-1,-1));addCard(hero);
-        action("۞","دعاها و زیارات","متن دعا و ابزار مطالعه",()->prayers());
-        action("✧","روایات","گزیده روایات مهدوی",()->simple("روایات"));
-        action("☾","زندگینامه امام زمان (عج)","آشنایی با زندگی و سیره",()->simple("زندگینامه امام زمان (عج)"));
-        action("▤","مقالات","مطالعه و پژوهش",()->simple("مقالات"));
-        action("▦","تقویم فارسی","امروز: "+jalaliToday(),()->calendarPage());
-        action("⚙","تنظیمات","ظاهر، قلم و اندازه نوشته‌ها",()->settings());
-        LinearLayout bottom=column();bottom.setPadding(12,12,12,12);
-        bottom.addView(txt("پرکاربرد",17,text(),true));
-        bottom.addView(txt("این بخش آزمایشی است و در به‌روزرسانی‌های بعدی فعال می‌شود.",13,text(),false));
+        intro.addView(txt("به یاد امام عصر (عج)",14,0xffe7eadc,false));
+        hero.addView(intro,new FrameLayout.LayoutParams(-1,-1));
+        LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,460);
+        hp.setMargins(0,0,0,12); page.addView(hero,hp);
+
+        HorizontalScrollView menuScroll=new HorizontalScrollView(this);
+        menuScroll.setHorizontalScrollBarEnabled(false);
+        LinearLayout menu=new LinearLayout(this); menu.setOrientation(LinearLayout.HORIZONTAL);
+        menu.setGravity(Gravity.CENTER_VERTICAL);
+        addMenuTile(menu,"۞","دعاها",()->prayers());
+        addMenuTile(menu,"✧","روایات",()->simple("روایات"));
+        addMenuTile(menu,"☾","زندگینامه",()->simple("زندگینامه امام زمان (عج)"));
+        addMenuTile(menu,"▤","مقالات",()->simple("مقالات"));
+        addMenuTile(menu,"▦","تقویم",()->calendarPage());
+        addMenuTile(menu,"⚙","تنظیمات",()->settings());
+        menuScroll.addView(menu); page.addView(menuScroll);
+        LinearLayout bottom=column(); bottom.setPadding(12,10,12,10);
+        bottom.addView(txt("پرکاربرد",16,text(),true));
+        bottom.addView(txt("این بخش آزمایشی است و در به‌روزرسانی‌های بعدی فعال می‌شود.",12,text(),false));
         addCard(bottom);
+    }
+    private void addMenuTile(LinearLayout menu,String icon,String title,Runnable run){
+        LinearLayout tile=new LinearLayout(this); tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER); tile.setPadding(5,7,5,5);
+        tile.setBackground(shape(card(),17)); tile.setElevation(3);
+        TextView symbol=txt(icon,28,gold,true);
+        symbol.setBackground(shape(dark?0xff203c31:0xffedf3ed,13));
+        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(66,62);
+        tile.addView(symbol,ip);
+        TextView caption=txt(title,12,text(),true); caption.setPadding(2,5,2,2);
+        tile.addView(caption);
+        tile.setOnClickListener(v->run.run());
+        LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(82,100);
+        tp.setMargins(4,0,4,0); menu.addView(tile,tp);
     }
     private void prayers(){
         base("دعاها و زیارات");
@@ -112,29 +140,81 @@ public class MainActivity extends Activity {
     }
     private void reader(String name){
         currentPrayer=name;
-        ScrollView outer=new ScrollView(this);readingScroll=outer;
-        page=column();page.setPadding(16,16,16,24);page.setBackgroundColor(bg());
-        outer.addView(page);setContentView(outer);applyBars();
-        TextView h=txt(name,22,Color.WHITE,true);h.setBackground(shape(green,25));page.addView(h);
-        page.addView(txt("متن دعا و ترجمه",14,text(),true));
-        String warning="متن کامل و ترجمهٔ مقابله‌شدهٔ این دعا هنوز به بانک محتوای تأییدشدهٔ برنامه افزوده نشده است.";
-        page.addView(txt(warning,16,text(),false));
-        page.addView(txt("نمونهٔ قالب نمایش دعا",14,gold,true));
-        TextView ar=txt("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",arabicSize,text(),true); ar.setTypeface(arabicFace,Typeface.NORMAL); page.addView(ar);
-        page.addView(txt("به نام خداوند بخشنده مهربان",persianSize,text(),false));
-        page.addView(txt("پس از افزودن متن معتبر، هر بخش عربی همراه با ترجمهٔ همان بخش نمایش داده خواهد شد.",persianSize,text(),false));
-        LinearLayout controls=column();controls.setPadding(12,12,12,12);
+        ScrollView outer=new ScrollView(this); readingScroll=outer;
+        page=column(); page.setPadding(16,16,16,24); page.setBackgroundColor(bg());
+        outer.addView(page); setContentView(outer); applyBars();
+        TextView h=txt(name,22,Color.WHITE,true); h.setBackground(shape(green,25)); page.addView(h);
+        page.addView(txt("متن عربی و ترجمهٔ فارسی",14,gold,true));
+        String[][] parts=prayerData(name);
+        for(String[] pair:parts){
+            LinearLayout segment=column(); segment.setPadding(12,8,12,8);
+            TextView ar=txt(pair[0],arabicSize,text(),true);
+            ar.setTypeface(arabicFace,Typeface.NORMAL); ar.setGravity(Gravity.RIGHT);
+            ar.setLineSpacing(8,1.2f); segment.addView(ar);
+            TextView fa=txt(pair[1],persianSize,text(),false);
+            fa.setGravity(Gravity.RIGHT); fa.setLineSpacing(5,1.15f); segment.addView(fa);
+            addCard(segment);
+        }
+        LinearLayout controls=column(); controls.setPadding(12,12,12,12);
         controls.addView(txt("ابزار مطالعه",16,text(),true));
-        Button start=button(scrolling?"توقف اسکرول":"شروع اسکرول خودکار",()->toggleScroll());
-        controls.addView(start);
-        SeekBar speed=new SeekBar(this);speed.setMax(90);speed.setProgress(35);controls.addView(txt("سرعت اسکرول",13,text(),false));controls.addView(speed);
+        controls.addView(button(scrolling?"توقف اسکرول":"شروع اسکرول خودکار",()->toggleScroll()));
+        SeekBar speed=new SeekBar(this); speed.setMax(90); speed.setProgress(35);
+        controls.addView(txt("سرعت اسکرول",13,text(),false)); controls.addView(speed);
         speed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             public void onProgressChanged(SeekBar b,int p,boolean u){scrollDelay=Math.max(5,95-p);}
             public void onStartTrackingTouch(SeekBar b){} public void onStopTrackingTouch(SeekBar b){}
         });
-        Button audio=button("افزودن صوت دعا در نسخه‌های بعد",()->toast("پخش صوت پس از فراهم‌شدن فایل‌های مجاز اضافه می‌شود."));
-        controls.addView(audio);page.addView(controls);addBack();
+        controls.addView(button("صوت دعا؛ در به‌روزرسانی بعدی",()->toast("فایل صوتی هنوز به برنامه اضافه نشده است.")));
+        page.addView(controls); addBack();
         scrollTask=()->{if(scrolling&&readingScroll!=null){readingScroll.smoothScrollBy(0,2);handler.postDelayed(scrollTask,scrollDelay);}};
+    }
+    private String[][] prayerData(String name){
+        if(name.equals("دعای سلامتی امام زمان")) return new String[][]{
+            {"اللّهُمَّ كُنْ لِوَلِيِّكَ الحُجَّةِ بْنِ الحَسَنِ صَلَواتُكَ عَلَيْهِ وَعَلَى آبائِهِ",
+             "خدایا، برای ولیّ خود، حجت بن الحسن، که درودهایت بر او و پدرانش باد،"},
+            {"فِي هذِهِ السَّاعَةِ وَفِي كُلِّ ساعَةٍ وَلِيّاً وَحافِظاً وَقائِداً وَناصِراً وَدَلِيلاً وَعَيْناً",
+             "در این ساعت و در هر ساعت، سرپرست و نگهبان و پیشوا و یاور و راهنما و دیده‌بان او باش؛"},
+            {"حَتّى تُسْكِنَهُ أَرْضَكَ طَوْعاً وَتُمَتِّعَهُ فِيها طَوِيلاً",
+             "تا آن‌گاه که او را با خواست و خشنودی در زمینت جای دهی و زمانی طولانی از آن بهره‌مندش سازی."}
+        };
+        if(name.equals("دعای فرج")) return new String[][]{
+            {"إِلَهِي عَظُمَ الْبَلاءُ وَبَرِحَ الْخَفَاءُ وَانْكَشَفَ الْغِطَاءُ وَانْقَطَعَ الرَّجَاءُ وَضَاقَتِ الْأَرْضُ وَمُنِعَتِ السَّمَاءُ وَأَنْتَ الْمُسْتَعَانُ وَإِلَيْكَ الْمُشْتَكَى وَعَلَيْكَ الْمُعَوَّلُ فِي الشِّدَّةِ وَالرَّخَاءِ",
+             "خدایا، بلا بزرگ شده، نهان آشکار گشته، پرده کنار رفته، امیدها گسسته و زمین تنگ شده و آسمان از بخشش بازمانده است. تویی یاور و پناه؛ شکایت به سوی توست و در سختی و آسایش بر تو تکیه می‌کنیم."},
+            {"اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَآلِ مُحَمَّدٍ أُولِي الْأَمْرِ الَّذِينَ فَرَضْتَ عَلَيْنَا طَاعَتَهُمْ وَعَرَّفْتَنَا بِذَلِكَ مَنْزِلَتَهُمْ فَفَرِّجْ عَنَّا بِحَقِّهِمْ فَرَجاً عَاجِلاً قَرِيباً كَلَمْحِ الْبَصَرِ أَوْ هُوَ أَقْرَبُ",
+             "خدایا، بر محمد و خاندان محمد، صاحبان فرمانی که اطاعتشان را بر ما واجب کردی و جایگاهشان را به ما شناساندی، درود فرست؛ و به حق آنان، گشایشی فوری و نزدیک، چون چشم برهم‌زدنی یا نزدیک‌تر، برای ما فراهم کن."},
+            {"يَا مُحَمَّدُ يَا عَلِيُّ يَا عَلِيُّ يَا مُحَمَّدُ اكْفِيَانِي فَإِنَّكُمَا كَافِيَانِ وَانْصُرَانِي فَإِنَّكُمَا نَاصِرَانِ",
+             "ای محمد، ای علی؛ ای علی، ای محمد؛ مرا کفایت کنید که شما دو تن کفایت‌کننده‌اید و یاری‌ام دهید که شما دو تن یاورید."},
+            {"يَا مَوْلَانَا يَا صَاحِبَ الزَّمَانِ الْغَوْثَ الْغَوْثَ الْغَوْثَ أَدْرِكْنِي أَدْرِكْنِي أَدْرِكْنِي السَّاعَةَ السَّاعَةَ السَّاعَةَ الْعَجَلَ الْعَجَلَ الْعَجَلَ يَا أَرْحَمَ الرَّاحِمِينَ بِحَقِّ مُحَمَّدٍ وَآلِهِ الطَّاهِرِينَ",
+             "ای مولای ما، ای صاحب‌الزمان، پناه و فریادرس! به فریادم برس، همین اکنون، شتاب کن، ای مهربان‌ترین مهربانان، به حق محمد و خاندان پاکش."}
+        };
+        return new String[][]{
+            {"اللَّهُمَّ رَبَّ النُّورِ الْعَظِيمِ وَرَبَّ الْكُرْسِيِّ الرَّفِيعِ وَرَبَّ الْبَحْرِ الْمَسْجُورِ وَمُنْزِلَ التَّوْرَاةِ وَالْإِنْجِيلِ وَالزَّبُورِ وَرَبَّ الظِّلِّ وَالْحَرُورِ وَمُنْزِلَ الْقُرْآنِ الْعَظِيمِ وَرَبَّ الْمَلَائِكَةِ الْمُقَرَّبِينَ وَالْأَنْبِيَاءِ وَالْمُرْسَلِينَ",
+             "خدایا، ای پروردگار نور بزرگ، کرسی بلند، دریای آکنده و جوشان؛ ای فرستنده تورات و انجیل و زبور، پروردگار سایه و گرمای آفتاب، نازل‌کننده قرآن بزرگ و پروردگار فرشتگان مقرب و پیامبران و فرستادگان."},
+            {"اللَّهُمَّ إِنِّي أَسْأَلُكَ بِوَجْهِكَ الْكَرِيمِ وَبِنُورِ وَجْهِكَ الْمُنِيرِ وَمُلْكِكَ الْقَدِيمِ يَا حَيُّ يَا قَيُّومُ أَسْأَلُكَ بِاسْمِكَ الَّذِي أَشْرَقَتْ بِهِ السَّمَاوَاتُ وَالْأَرَضُونَ وَبِاسْمِكَ الَّذِي يَصْلُحُ بِهِ الْأَوَّلُونَ وَالْآخِرُونَ",
+             "خدایا، از تو می‌خواهم به ذات کریمت، به نور روشنی‌بخش چهره‌ات و فرمانروایی دیرینه‌ات؛ ای زنده و پاینده! به نامت که آسمان‌ها و زمین‌ها با آن روشن شدند و به نامت که پیشینیان و پسینیان به صلاح می‌رسند."},
+            {"يَا حَيّاً قَبْلَ كُلِّ حَيٍّ وَيَا حَيّاً بَعْدَ كُلِّ حَيٍّ وَيَا حَيّاً حِينَ لَا حَيَّ يَا مُحْيِيَ الْمَوْتَى وَمُمِيتَ الْأَحْيَاءِ يَا حَيُّ لَا إِلَهَ إِلَّا أَنْتَ",
+             "ای زنده پیش از هر زنده، ای زنده پس از هر زنده و ای زنده آن‌گاه که هیچ زنده‌ای نبود؛ ای زنده‌کننده مردگان و میراننده زندگان؛ ای زنده‌ای که معبودی جز تو نیست."},
+            {"اللَّهُمَّ بَلِّغْ مَوْلَانَا الْإِمَامَ الْهَادِيَ الْمَهْدِيَّ الْقَائِمَ بِأَمْرِكَ صَلَوَاتُ اللَّهِ عَلَيْهِ وَعَلَى آبَائِهِ الطَّاهِرِينَ عَنْ جَمِيعِ الْمُؤْمِنِينَ وَالْمُؤْمِنَاتِ فِي مَشَارِقِ الْأَرْضِ وَمَغَارِبِهَا سَهْلِهَا وَجَبَلِهَا وَبَرِّهَا وَبَحْرِهَا وَعَنِّي وَعَنْ وَالِدَيَّ مِنَ الصَّلَوَاتِ زِنَةَ عَرْشِ اللَّهِ وَمِدَادَ كَلِمَاتِهِ وَمَا أَحْصَاهُ عِلْمُهُ وَأَحَاطَ بِهِ كِتَابُهُ",
+             "خدایا، از سوی همه مردان و زنان باایمان در شرق و غرب زمین، دشت و کوه، خشکی و دریا، و نیز از سوی من و پدر و مادرم، به مولایمان امام هدایتگر و هدایت‌شده، قیام‌کننده به فرمانت، درودهایی به شمار وزن عرش خدا و مرکب کلماتش و به اندازه آنچه دانش او شمرده و کتابش فراگرفته است، برسان."},
+            {"اللَّهُمَّ إِنِّي أُجَدِّدُ لَهُ فِي صَبِيحَةِ يَوْمِي هَذَا وَمَا عِشْتُ مِنْ أَيَّامِي عَهْداً وَعَقْداً وَبَيْعَةً لَهُ فِي عُنُقِي لَا أَحُولُ عَنْهَا وَلَا أَزُولُ أَبَداً",
+             "خدایا، من در بامداد امروز و در همه روزهای زندگی‌ام، پیمان و عهد و بیعت خود را با او تازه می‌کنم؛ پیمانی بر گردن من که هرگز از آن روی نمی‌گردانم و دست نمی‌کشم."},
+            {"اللَّهُمَّ اجْعَلْنِي مِنْ أَنْصَارِهِ وَأَعْوَانِهِ وَالذَّابِّينَ عَنْهُ وَالْمُسَارِعِينَ إِلَيْهِ فِي قَضَاءِ حَوَائِجِهِ وَالْمُمْتَثِلِينَ لِأَوَامِرِهِ وَالْمُحَامِينَ عَنْهُ وَالسَّابِقِينَ إِلَى إِرَادَتِهِ وَالْمُسْتَشْهَدِينَ بَيْنَ يَدَيْهِ",
+             "خدایا، مرا از یاران و مددکاران و دفاع‌کنندگان از او قرار ده؛ از کسانی که در برآوردن خواسته‌هایش می‌شتابند، فرمان‌هایش را اطاعت می‌کنند، از او حمایت می‌کنند، در انجام خواست او پیشی می‌گیرند و در پیشگاهش به شهادت می‌رسند."},
+            {"اللَّهُمَّ إِنْ حَالَ بَيْنِي وَبَيْنَهُ الْمَوْتُ الَّذِي جَعَلْتَهُ عَلَى عِبَادِكَ حَتْماً مَقْضِيّاً فَأَخْرِجْنِي مِنْ قَبْرِي مُؤْتَزِراً كَفَنِي شَاهِراً سَيْفِي مُجَرِّداً قَنَاتِي مُلَبِّياً دَعْوَةَ الدَّاعِي فِي الْحَاضِرِ وَالْبَادِي",
+             "خدایا، اگر مرگی که آن را سرنوشتی حتمی برای بندگانت قرار داده‌ای میان من و او فاصله انداخت، مرا از قبرم بیرون آور، در حالی که کفنم را به کمر بسته، شمشیرم را آخته و نیزه‌ام را برهنه کرده‌ام و دعوت دعوت‌کننده را در شهر و بیابان پاسخ می‌دهم."},
+            {"اللَّهُمَّ أَرِنِي الطَّلْعَةَ الرَّشِيدَةَ وَالْغُرَّةَ الْحَمِيدَةَ وَاكْحُلْ نَاظِرِي بِنَظْرَةٍ مِنِّي إِلَيْهِ وَعَجِّلْ فَرَجَهُ وَسَهِّلْ مَخْرَجَهُ وَأَوْسِعْ مَنْهَجَهُ وَاسْلُكْ بِي مَحَجَّتَهُ وَأَنْفِذْ أَمْرَهُ وَاشْدُدْ أَزْرَهُ",
+             "خدایا، آن چهره هدایتگر و پیشانی ستوده را به من بنمایان و دیدگانم را با نگاه به او روشن کن؛ در فرجش شتاب فرما، راه خروجش را آسان و مسیرش را گسترده ساز، مرا در راه روشن او قرار ده، فرمانش را نافذ و پشتش را استوار گردان."},
+            {"وَاعْمُرِ اللَّهُمَّ بِهِ بِلَادَكَ وَأَحْيِ بِهِ عِبَادَكَ فَإِنَّكَ قُلْتَ وَقَوْلُكَ الْحَقُّ ظَهَرَ الْفَسَادُ فِي الْبَرِّ وَالْبَحْرِ بِمَا كَسَبَتْ أَيْدِي النَّاسِ",
+             "خدایا، سرزمین‌هایت را به دست او آباد و بندگانت را به وسیله او زنده کن؛ زیرا تو فرموده‌ای و سخنت حق است: فساد در خشکی و دریا به سبب کارهایی که مردم انجام داده‌اند آشکار شده است."},
+            {"فَأَظْهِرِ اللَّهُمَّ لَنَا وَلِيَّكَ وَابْنَ بِنْتِ نَبِيِّكَ الْمُسَمَّى بِاسْمِ رَسُولِكَ حَتَّى لَا يَظْفَرَ بِشَيْءٍ مِنَ الْبَاطِلِ إِلَّا مَزَّقَهُ وَيُحِقَّ الْحَقَّ وَيُحَقِّقَهُ",
+             "پس خدایا، ولیّ خود و فرزند دختر پیامبرت را که هم‌نام فرستاده توست برای ما آشکار ساز؛ تا با هیچ باطلی روبه‌رو نشود مگر آنکه آن را درهم شکند و حق را استوار و تحقق‌یافته سازد."},
+            {"وَاجْعَلْهُ اللَّهُمَّ مَفْزَعاً لِمَظْلُومِ عِبَادِكَ وَنَاصِراً لِمَنْ لَا يَجِدُ لَهُ نَاصِراً غَيْرَكَ وَمُجَدِّداً لِمَا عُطِّلَ مِنْ أَحْكَامِ كِتَابِكَ وَمُشَيِّداً لِمَا وَرَدَ مِنْ أَعْلَامِ دِينِكَ وَسُنَنِ نَبِيِّكَ صَلَّى اللَّهُ عَلَيْهِ وَآلِهِ",
+             "خدایا، او را پناه ستمدیدگان و یاور بی‌یاوران قرار ده؛ احکام تعطیل‌شده کتابت را زنده کند و نشانه‌های دین و سنت‌های پیامبرت را استوار سازد."},
+            {"وَاجْعَلْهُ اللَّهُمَّ مِمَّنْ حَصَّنْتَهُ مِنْ بَأْسِ الْمُعْتَدِينَ اللَّهُمَّ وَسُرَّ نَبِيَّكَ مُحَمَّداً صَلَّى اللَّهُ عَلَيْهِ وَآلِهِ بِرُؤْيَتِهِ وَمَنْ تَبِعَهُ عَلَى دَعْوَتِهِ وَارْحَمِ اسْتِكَانَتَنَا بَعْدَهُ",
+             "خدایا، او را از کسانی قرار ده که از گزند تجاوزگران حفظ کرده‌ای؛ پیامبرت محمد و پیروان دعوتش را با دیدار او شادمان ساز و بر ناتوانی و فروتنی ما پس از او رحم کن."},
+            {"اللَّهُمَّ اكْشِفْ هَذِهِ الْغُمَّةَ عَنْ هَذِهِ الْأُمَّةِ بِحُضُورِهِ وَعَجِّلْ لَنَا ظُهُورَهُ إِنَّهُمْ يَرَوْنَهُ بَعِيداً وَنَرَاهُ قَرِيباً بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ الْعَجَلَ الْعَجَلَ يَا مَوْلَايَ يَا صَاحِبَ الزَّمَانِ",
+             "خدایا، با حضور او این اندوه را از این امت برطرف کن و در ظهورش برای ما شتاب فرما؛ دیگران آن را دور می‌بینند و ما نزدیکش می‌دانیم. به مهربانی‌ات، ای مهربان‌ترین مهربانان؛ شتاب کن، شتاب کن، ای مولای من، ای صاحب‌الزمان."}
+        };
     }
     private void toggleScroll(){
         scrolling=!scrolling;
@@ -188,29 +268,37 @@ public class MainActivity extends Activity {
         }catch(Exception e){toast("فایل فونت معتبر نیست یا قابل خواندن نیست.");}
     }
     private void calendarPage(){
-        base("تقویم فارسی");
-        Calendar now=Calendar.getInstance();
-        int[] today=gregorianToJalali(now.get(Calendar.YEAR),now.get(Calendar.MONTH)+1,now.get(Calendar.DAY_OF_MONTH));
-        int jy=today[0], jm=today[1], day=today[2];
+        base("تقویم سالانه ۱۴۰۵");
+        page.addView(txt("نمای کامل سال هجری شمسی؛ روزهای تعطیل با رنگ طلایی مشخص شده‌اند.",13,text(),false));
         String[] months={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"};
-        page.addView(txt(months[jm-1]+" "+jy,24,gold,true));
-        page.addView(txt("امروز: "+jalaliToday(),15,text(),true));
-        int[] first=jalaliToGregorian(jy,jm,1);
-        Calendar fc=Calendar.getInstance(); fc.clear(); fc.set(first[0],first[1]-1,first[2]);
-        int offset=fc.get(Calendar.DAY_OF_WEEK)%7;
-        int count=jalaliMonthLength(jy,jm);
-        String[] week={"ش","ی","د","س","چ","پ","ج"};
-        GridLayout grid=new GridLayout(this); grid.setColumnCount(7); grid.setUseDefaultMargins(true);
-        for(String w:week){ TextView cell=txt(w,13,gold,true); GridLayout.LayoutParams lp=new GridLayout.LayoutParams(); lp.width=0; lp.height=48; lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f); grid.addView(cell,lp); }
-        for(int i=0;i<offset+count;i++){
-            int number=i-offset+1; TextView cell=txt(i<offset?"":String.valueOf(number),15,text(),number==day);
-            if(i>=offset&&number==day) cell.setBackground(shape(green,16));
-            GridLayout.LayoutParams lp=new GridLayout.LayoutParams(); lp.width=0; lp.height=48; lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f); grid.addView(cell,lp);
+        String[] weekdays={"ش","ی","د","س","چ","پ","ج"};
+        int[][] holidays={{1,1},{1,2},{1,3},{1,4},{1,12},{1,13},{1,25},{3,6},{3,14},{3,15},{4,3},{4,4},{5,13},{5,21},{5,22},{5,30},{6,8},{8,22},{10,2},{10,16},{11,4},{11,22},{12,9},{12,19},{12,20},{12,29}};
+        String[] holidayNames={"نوروز و عید فطر","نوروز و عید فطر","نوروز","نوروز","روز جمهوری اسلامی","روز طبیعت","شهادت امام جعفر صادق (ع)","عید قربان","رحلت امام خمینی (ره) و عید غدیر","قیام ۱۵ خرداد","تاسوعای حسینی","عاشورای حسینی","اربعین حسینی","رحلت پیامبر (ص) و شهادت امام حسن (ع)","شهادت امام رضا (ع)","شهادت امام حسن عسکری (ع)","میلاد پیامبر (ص) و امام صادق (ع)","شهادت حضرت فاطمه زهرا (س)","ولادت امام علی (ع) و روز پدر","مبعث پیامبر اکرم (ص)","ولادت امام مهدی (عج) و نیمه شعبان","پیروزی انقلاب اسلامی","شهادت امام علی (ع)","عید فطر","تعطیلی عید فطر","ملی شدن صنعت نفت"};
+        for(int m=1;m<=12;m++){
+            LinearLayout monthBox=column(); monthBox.setPadding(10,8,10,10);
+            monthBox.addView(txt(months[m-1],18,gold,true));
+            GridLayout grid=new GridLayout(this); grid.setColumnCount(7); grid.setUseDefaultMargins(true);
+            for(String w:weekdays){TextView v=txt(w,11,gold,true);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=30;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(v,lp);}
+            int[] first=jalaliToGregorian(1405,m,1); Calendar fc=Calendar.getInstance();fc.clear();fc.set(first[0],first[1]-1,first[2]);
+            int offset=fc.get(Calendar.DAY_OF_WEEK)%7, count=jalaliMonthLength(1405,m);
+            for(int k=0;k<offset;k++){TextView blank=txt("",10,text(),false);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=34;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(blank,lp);}
+            for(int d=1;d<=count;d++){
+                boolean holiday=false;String event="";
+                for(int z=0;z<holidays.length;z++)if(holidays[z][0]==m&&holidays[z][1]==d){holiday=true;event=holidayNames[z];break;}
+                final int fm=m,fd=d; TextView cell=txt(String.valueOf(d),12,holiday?Color.WHITE:text(),holiday);
+                if(holiday)cell.setBackground(shape(0xffa67c32,12));
+                else if((offset+d-1)%7==6)cell.setTextColor(0xffc56d62);
+                GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=34;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(cell,lp);
+                if(holiday){final String ev=event;cell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(fd+" "+months[fm-1]+" ۱۴۰۵").setMessage(ev).setPositiveButton("باشه",null).show());}
+            }
+            monthBox.addView(grid);
+            TextView note=txt("تعطیلات رسمی: "+monthHolidayCount(holidays,m),11,text(),false);
+            monthBox.addView(note); addCard(monthBox);
         }
-        addCard(grid);
-        page.addView(txt("هفته از شنبه آغاز می‌شود. تاریخ‌ها بر اساس هجری شمسی نمایش داده شده‌اند.",12,text(),false));
+        page.addView(txt("توجه: تاریخ مناسبت‌های قمری ممکن است با اعلام رسمی رؤیت هلال تغییر کند.",12,text(),false));
         addBack();
     }
+    private int monthHolidayCount(int[][] dates,int month){int n=0;for(int[] d:dates)if(d[0]==month)n++;return n;}
     private int jalaliMonthLength(int jy,int jm){
         if(jm<=6)return 31; if(jm<=11)return 30;
         int[] a=jalaliToGregorian(jy,12,1), b=jalaliToGregorian(jy+1,1,1);
