@@ -272,7 +272,28 @@ public class MainActivity extends Activity {
         b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(green));b.setOnClickListener(v->r.run());return b;
     }
     private void addBack(){Button b=button("بازگشت",()->home());page.addView(b);}
-    private void simple(String title){base(title);page.addView(txt("محتوای این بخش در حال آماده‌سازی است و در نسخهٔ محتوایی بعدی تکمیل می‌شود.",16,text(),false));addBack();}
+    private void simple(String title){
+        base(title);
+        if(title.contains("قرآن")){
+            page.addView(txt("کتابخانه قرآن کریم",18,gold,true));
+            page.addView(txt("این بخش برای نمایش سوره‌ها و متن کامل قرآن در نظر گرفته شده است. متن کامل قرآن در این نسخه به‌صورت آفلاین افزوده نشده؛ بنابراین متن ناقص یا ساختگی نمایش داده نمی‌شود.",15,text(),false));
+            String[] suras={"الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس"};
+            for(String x:suras)action("۞",x,"فهرست سوره‌ها؛ متن کامل در نسخه بعدی",()->toast("متن این سوره هنوز به کتابخانه آفلاین افزوده نشده است."));
+        }else if(title.contains("نهج")){
+            page.addView(txt("کتابخانه نهج‌البلاغه",18,gold,true));
+            page.addView(txt("گزیده‌ای از خطبه‌ها، نامه‌ها و حکمت‌ها در نسخه‌های بعدی به‌صورت متن کامل و همراه ترجمه افزوده می‌شود. در این نسخه از نمایش متن ناقص به‌عنوان متن کامل خودداری شده است.",15,text(),false));
+            action("❖","خطبه‌ها","فهرست خطبه‌ها",()->toast("متن کامل خطبه‌ها هنوز در بسته آفلاین نیست."));
+            action("✉","نامه‌ها","فهرست نامه‌ها",()->toast("متن کامل نامه‌ها هنوز در بسته آفلاین نیست."));
+            action("✦","حکمت‌ها","فهرست حکمت‌ها",()->toast("متن کامل حکمت‌ها هنوز در بسته آفلاین نیست."));
+        }else if(title.contains("صحیفه")){
+            page.addView(txt("صحیفه سجادیه",18,gold,true));
+            page.addView(txt("مجموعه دعاهای امام سجاد (ع). برای حفظ امانت، متن کامل دعاها تا زمان افزودن نسخه معتبر آفلاین به‌صورت کامل‌نما ارائه نشده است.",15,text(),false));
+            for(int i=1;i<=54;i++){final int n=i;action("۞","دعای "+i,"صحیفه سجادیه",()->toast("متن کامل دعای "+n+" هنوز به برنامه افزوده نشده است."));}
+        }else{
+            page.addView(txt("این بخش در حال تکمیل است.",15,text(),false));
+        }
+        addBack();
+    }
     private void settings(){
         base("تنظیمات برنامه");
         Switch theme=new Switch(this);theme.setText("حالت شب");theme.setTextColor(text());theme.setChecked(dark);
@@ -314,34 +335,45 @@ public class MainActivity extends Activity {
         }catch(Exception e){toast("فایل فونت معتبر نیست یا قابل خواندن نیست.");}
     }
     private void calendarPage(){
-        base("تقویم سالانه ۱۴۰۵");
-        page.addView(txt("نمای کامل سال هجری شمسی؛ روزهای تعطیل با رنگ طلایی مشخص شده‌اند.",13,text(),false));
+        final int[] year={Integer.parseInt(todayJalaliYear())};
+        renderCalendar(year[0]);
+    }
+    private void renderCalendar(int year){
+        base("تقویم هجری شمسی");
+        LinearLayout yr=new LinearLayout(this);yr.setGravity(Gravity.CENTER);
+        yr.addView(button("سال قبل",()->renderCalendar(year-1)));
+        yr.addView(txt("سال "+year,19,gold,true),new LinearLayout.LayoutParams(0,-2,1));
+        yr.addView(button("سال بعد",()->renderCalendar(year+1)));
+        page.addView(yr);
+        page.addView(txt("هفته از شنبه آغاز می‌شود. روزهای تعطیل ثابت شمسی مشخص شده‌اند؛ مناسبت‌های قمری باید با تقویم رسمی همان سال تطبیق داده شوند.",12,text(),false));
         String[] months={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"};
         String[] weekdays={"ش","ی","د","س","چ","پ","ج"};
-        int[][] holidays={{1,1},{1,2},{1,3},{1,4},{1,12},{1,13},{1,25},{3,6},{3,14},{3,15},{4,3},{4,4},{5,13},{5,21},{5,22},{5,30},{6,8},{8,22},{10,2},{10,16},{11,4},{11,22},{12,9},{12,19},{12,20},{12,29}};
-        String[] holidayNames={"نوروز و عید فطر","نوروز و عید فطر","نوروز","نوروز","روز جمهوری اسلامی","روز طبیعت","شهادت امام جعفر صادق (ع)","عید قربان","رحلت امام خمینی (ره) و عید غدیر","قیام ۱۵ خرداد","تاسوعای حسینی","عاشورای حسینی","اربعین حسینی","رحلت پیامبر (ص) و شهادت امام حسن (ع)","شهادت امام رضا (ع)","شهادت امام حسن عسکری (ع)","میلاد پیامبر (ص) و امام صادق (ع)","شهادت حضرت فاطمه زهرا (س)","ولادت امام علی (ع) و روز پدر","مبعث پیامبر اکرم (ص)","ولادت امام مهدی (عج) و نیمه شعبان","پیروزی انقلاب اسلامی","شهادت امام علی (ع)","عید فطر","تعطیلی عید فطر","ملی شدن صنعت نفت"};
         for(int m=1;m<=12;m++){
-            LinearLayout monthBox=column(); monthBox.setPadding(10,8,10,10);
+            LinearLayout monthBox=column();monthBox.setPadding(10,8,10,10);
             monthBox.addView(txt(months[m-1],18,gold,true));
-            GridLayout grid=new GridLayout(this); grid.setColumnCount(7); grid.setUseDefaultMargins(true);
+            GridLayout grid=new GridLayout(this);grid.setColumnCount(7);grid.setUseDefaultMargins(true);
             for(String w:weekdays){TextView v=txt(w,11,gold,true);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=30;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(v,lp);}
-            int[] first=jalaliToGregorian(1405,m,1); Calendar fc=Calendar.getInstance();fc.clear();fc.set(first[0],first[1]-1,first[2]);
-            int offset=fc.get(Calendar.DAY_OF_WEEK)%7, count=jalaliMonthLength(1405,m);
-            for(int k=0;k<offset;k++){TextView blank=txt("",10,text(),false);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=34;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(blank,lp);}
+            int[] first=jalaliToGregorian(year,m,1);Calendar fc=Calendar.getInstance();fc.clear();fc.set(first[0],first[1]-1,first[2]);
+            int offset=fc.get(Calendar.DAY_OF_WEEK)%7,count=jalaliMonthLength(year,m);
+            for(int k=0;k<offset;k++){TextView blank=txt("",10,text(),false);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=38;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(blank,lp);}
             for(int d=1;d<=count;d++){
-                boolean holiday=false;String event="";
-                for(int z=0;z<holidays.length;z++)if(holidays[z][0]==m&&holidays[z][1]==d){holiday=true;event=holidayNames[z];break;}
-                final int fm=m,fd=d; TextView cell=txt(String.valueOf(d),12,holiday?Color.WHITE:text(),holiday);
-                if(holiday)cell.setBackground(shape(0xffa67c32,12));
-                else if((offset+d-1)%7==6)cell.setTextColor(0xffc56d62);
-                GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=34;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(cell,lp);
-                if(holiday){final String ev=event;cell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(fd+" "+months[fm-1]+" ۱۴۰۵").setMessage(ev).setPositiveButton("باشه",null).show());}
+                final int fm=m,fd=d;
+                boolean fixed=(m==1&&d<=4)||(m==1&&(d==12||d==13))||(m==3&&d==14)||(m==11&&d==22);
+                boolean friday=((offset+d-1)%7)==6;
+                TextView cell=txt(String.valueOf(d),13,fixed?Color.WHITE:(friday?0xffc56d62:text()),fixed);
+                if(fixed)cell.setBackground(shape(0xff9b7330,12));
+                GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=38;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(cell,lp);
+                cell.setOnClickListener(v->{
+                    int[] g=jalaliToGregorian(year,fm,fd);
+                    String msg=String.format(Locale.US,"%04d/%02d/%02d",year,fm,fd)+"\nمعادل میلادی: "+g[0]+"/"+g[1]+"/"+g[2];
+                    if(fixed)msg+="\nتعطیل رسمی ثابت";
+                    else if(friday)msg+="\nجمعه";
+                    new AlertDialog.Builder(this).setTitle(fd+" "+months[fm-1]+" "+year).setMessage(msg).setPositiveButton("باشه",null).show();
+                });
             }
-            monthBox.addView(grid);
-            TextView note=txt("تعطیلات رسمی: "+monthHolidayCount(holidays,m),11,text(),false);
-            monthBox.addView(note); addCard(monthBox);
+            monthBox.addView(grid);addCard(monthBox);
         }
-        page.addView(txt("توجه: تاریخ مناسبت‌های قمری ممکن است با اعلام رسمی رؤیت هلال تغییر کند.",12,text(),false));
+        page.addView(txt("تعطیلات قمری و مناسبت‌های متغیر در این نسخه به‌عنوان تاریخ قطعی درج نشده‌اند تا تاریخ اشتباه نمایش داده نشود.",12,text(),false));
         addBack();
     }
     private int monthHolidayCount(int[][] dates,int month){int n=0;for(int[] d:dates)if(d[0]==month)n++;return n;}
