@@ -112,43 +112,27 @@ public class MainActivity extends Activity {
         dateInfo.addView(weekday);dateInfo.addView(bigDay);dateInfo.addView(month);dateInfo.addView(greg);
         hero.addView(dateInfo,new FrameLayout.LayoutParams(-1,-1,Gravity.RIGHT|Gravity.CENTER_VERTICAL));
         page.addView(hero,new LinearLayout.LayoutParams(-1,238));
-        // Four-column square shortcut grid
-        String[][] labels={{"قرآن کریم","نهج البلاغه","کلیات مفاتیح","صحیفه سجادیه"},
-            {"اذان‌گو","هشدارها","قبله‌نما","تقویم"},
-            {"نشان‌شده‌ها","ختم قرآن","زندگینامه","درباره برنامه"}};
-        String[][] icons={{"۞","❖","✧","❀"},{"⌂","◷","◉","▦"},{"▮","۞","☾","ⓘ"}};
-        Runnable[][] actions={{()->simple("قرآن کریم"),()->simple("نهج البلاغه"),()->prayers(),()->simple("صحیفه سجادیه")},
-            {()->simple("اذان‌گو"),()->simple("هشدارها"),()->simple("قبله‌نما"),()->calendarPage()},
-            {()->simple("نشان‌شده‌ها"),()->simple("ختم قرآن"),()->biography(),()->simple("درباره برنامه")}};
+        // Main navigation: prayers are the primary feature.
+        String[][] labels={{"ادعیه و زیارات","قرآن کریم","نهج‌البلاغه","صحیفه سجادیه"},
+            {"تقویم","زندگی‌نامه امام","احادیث","مفاتیح‌الجنان"},
+            {"نشان‌شده‌ها","ختم قرآن","تنظیمات","درباره برنامه"}};
+        String[][] icons={{"۞","۩","❖","❀"},{"▦","☾","✦","✧"},{"☆","۞","⚙","ⓘ"}};
+        Runnable[][] actions={{()->prayers(),()->simple("قرآن کریم"),()->simple("نهج‌البلاغه"),()->simple("صحیفه سجادیه")},
+            {()->calendarPage(),()->biography(),()->hadiths(),()->prayers()},
+            {()->simple("نشان‌شده‌ها"),()->simple("ختم قرآن"),()->settings(),()->simple("درباره برنامه")}};
         for(int r=0;r<labels.length;r++){
             LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER);row.setPadding(5,12,5,4);
             for(int c=0;c<4;c++)addMenuTile(row,icons[r][c],labels[r][c],actions[r][c]);
             page.addView(row);
         }
-        View divider=new View(this);divider.setBackgroundColor(0xffe5e5e5);
-        LinearLayout.LayoutParams dp=new LinearLayout.LayoutParams(-1,1);dp.topMargin=10;page.addView(divider,dp);
-        LinearLayout day=column();day.setPadding(16,12,16,8);
-        LinearLayout dayHead=new LinearLayout(this);dayHead.setGravity(Gravity.CENTER_VERTICAL);
-        TextView dayTitle=txt("برنامه امروز",19,text(),true);dayTitle.setGravity(Gravity.RIGHT);
-        dayHead.addView(dayTitle,new LinearLayout.LayoutParams(0,-2,1));
-        TextView date=txt(jalaliToday(),13,0xff159f98,true);dayHead.addView(date);
-        day.addView(dayHead);
-        TextView focus=txt("پیمان امروز: یک قدم برای نزدیک‌تر شدن به امام زمان (عج)",14,text(),false);
-        focus.setBackground(shape(0xffe7f5f3,14));day.addView(focus);
-        day.addView(button("مطالعه دعای عهد",()->reader("دعای عهد")));
-        page.addView(day);
-        // Bottom navigation bar
-        LinearLayout nav=new LinearLayout(this);nav.setGravity(Gravity.CENTER);nav.setPadding(4,10,4,4);
-        String[] navLabels={"خانه","قرآن","پرکاربردها","کتابخانه","تنظیمات"};
-        String[] navIcons={"⌂","▤","▦","▣","⚙"};
-        for(int i=0;i<navLabels.length;i++){
-            final int ix=i;LinearLayout item=column();item.setGravity(Gravity.CENTER);
-            item.addView(txt(navIcons[i],23,i==0?0xff159f98:0xff9da5a2,true));
-            item.addView(txt(navLabels[i],11,i==0?0xff159f98:0xff9da5a2,false));
-            item.setOnClickListener(v->{if(ix==0)home();else if(ix==4)settings();else if(ix==1)simple("قرآن");else if(ix==2)simple("پرکاربردها");else simple("کتابخانه");});
-            nav.addView(item,new LinearLayout.LayoutParams(0,66,1));
-        }
-        page.addView(nav);
+        TextView prayerFeature=txt("قرار روزانه با امام زمان (عج)\nمطالعه دعاهای کامل همراه ترجمه فارسی",17,Color.WHITE,true);
+        prayerFeature.setBackground(shape(0xff145b43,24));
+        prayerFeature.setPadding(16,22,16,22);
+        prayerFeature.setOnClickListener(v->prayers());
+        LinearLayout.LayoutParams featureLp=new LinearLayout.LayoutParams(-1,-2);
+        featureLp.setMargins(14,18,14,8);page.addView(prayerFeature,featureLp);
+        TextView settingsShortcut=txt("تنظیمات قلم و نمایش",14,gold,true);
+        settingsShortcut.setOnClickListener(v->settings());page.addView(settingsShortcut);
     }
     private String[] jalaliParts(){Calendar c=Calendar.getInstance();return new String[]{String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[0]),String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[1]),String.valueOf(gregorianToJalali(c.get(Calendar.YEAR),c.get(Calendar.MONTH)+1,c.get(Calendar.DAY_OF_MONTH))[2])};}
     private String todayJalaliYear(){return jalaliParts()[0];}
@@ -179,10 +163,25 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,112,1);tp.setMargins(3,0,3,0);menu.addView(tile,tp);
     }
     private void prayers(){
-        base("دعاها و زیارات");
-        action("۞","دعای عهد","",()->reader("دعای عهد"));
-        action("✦","دعای فرج","",()->reader("دعای فرج"));
-        action("♡","دعای سلامتی امام زمان","",()->reader("دعای سلامتی امام زمان"));
+        base("ادعیه و زیارات");
+        page.addView(txt("متن عربی و ترجمه فارسی؛ برای مطالعه با اندازه قلم و اسکرول قابل تنظیم.",13,gold,true));
+        action("۞","دعای عهد","تجدید پیمان با امام زمان (عج)",()->reader("دعای عهد"));
+        action("✦","دعای فرج؛ الهی عظم البلاء","درخواست گشایش و فرج",()->reader("دعای فرج"));
+        action("♡","دعای سلامتی امام زمان","اللهم کن لولیک",()->reader("دعای سلامتی امام زمان"));
+        action("✧","دعای توسل","",()->reader("دعای توسل"));
+        action("☾","دعای کمیل","",()->reader("دعای کمیل"));
+        action("❖","دعای ندبه","",()->reader("دعای ندبه"));
+        action("۩","زیارت آل‌یاسین","",()->reader("زیارت آل یاسین"));
+        action("✺","زیارت عاشورا","",()->reader("زیارت عاشورا"));
+        action("❀","زیارت جامعه کبیره","",()->reader("زیارت جامعه کبیره"));
+        addBack();
+    }
+    private void hadiths(){
+        base("احادیث مهدوی");
+        String[][] h={{"أَكْثِرُوا الدُّعَاءَ بِتَعْجِيلِ الْفَرَجِ","برای تعجیل فرج بسیار دعا کنید. (دعای امام زمان، احتجاج طبرسی)"},
+        {"وَأَمَّا الْحَوَادِثُ الْوَاقِعَةُ فَارْجِعُوا فِيهَا إِلَى رُوَاةِ حَدِيثِنَا","در رخدادهای تازه به راویان حدیث ما مراجعه کنید. (توقیع شریف، کمال‌الدین)"},
+        {"إِنَّا غَيْرُ مُهْمِلِينَ لِمُرَاعَاتِكُمْ وَلَا نَاسِينَ لِذِكْرِكُمْ","ما در رسیدگی به حال شما کوتاهی نمی‌کنیم و یاد شما را از خاطر نمی‌بریم. (توقیع شریف، احتجاج طبرسی)"}};
+        for(String[] x:h){LinearLayout b=column();b.setPadding(12,8,12,8);b.addView(txt(x[0],21,text(),true));TextView tr=txt(x[1],14,text(),false);tr.setGravity(Gravity.RIGHT);b.addView(tr);addCard(b);}
         addBack();
     }
     private void reader(String name){
@@ -265,8 +264,8 @@ public class MainActivity extends Activity {
     }
     private void toggleScroll(){
         scrolling=!scrolling;
-        if(scrolling){if(scrollTask!=null)handler.post(scrollTask);}else handler.removeCallbacks(scrollTask);
-        reader(currentPrayer);
+        if(scrolling){if(scrollTask!=null)handler.post(scrollTask);toast("اسکرول خودکار شروع شد");}
+        else {handler.removeCallbacks(scrollTask);toast("اسکرول متوقف شد");}
     }
     private Button button(String s,Runnable r){
         Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(Color.WHITE);
