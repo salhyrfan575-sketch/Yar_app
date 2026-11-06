@@ -168,12 +168,6 @@ public class MainActivity extends Activity {
         action("۞","دعای عهد","تجدید پیمان با امام زمان (عج)",()->reader("دعای عهد"));
         action("✦","دعای فرج؛ الهی عظم البلاء","درخواست گشایش و فرج",()->reader("دعای فرج"));
         action("♡","دعای سلامتی امام زمان","اللهم کن لولیک",()->reader("دعای سلامتی امام زمان"));
-        action("✧","دعای توسل","",()->reader("دعای توسل"));
-        action("☾","دعای کمیل","",()->reader("دعای کمیل"));
-        action("❖","دعای ندبه","",()->reader("دعای ندبه"));
-        action("۩","زیارت آل‌یاسین","",()->reader("زیارت آل یاسین"));
-        action("✺","زیارت عاشورا","",()->reader("زیارت عاشورا"));
-        action("❀","زیارت جامعه کبیره","",()->reader("زیارت جامعه کبیره"));
         addBack();
     }
     private void hadiths(){
@@ -358,7 +352,7 @@ public class MainActivity extends Activity {
             for(int k=0;k<offset;k++){TextView blank=txt("",10,text(),false);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=38;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(blank,lp);}
             for(int d=1;d<=count;d++){
                 final int fm=m,fd=d;
-                boolean fixed=(m==1&&d<=4)||(m==1&&(d==12||d==13))||(m==3&&d==14)||(m==11&&d==22);
+                boolean fixed=(m==1&&d<=4)||(m==1&&(d==12||d==13))||(m==3&&(d==14||d==15))||(m==11&&d==22)||(m==12&&d==29);
                 boolean friday=((offset+d-1)%7)==6;
                 TextView cell=txt(String.valueOf(d),13,fixed?Color.WHITE:(friday?0xffc56d62:text()),fixed);
                 if(fixed)cell.setBackground(shape(0xff9b7330,12));
@@ -373,7 +367,7 @@ public class MainActivity extends Activity {
             }
             monthBox.addView(grid);addCard(monthBox);
         }
-        page.addView(txt("تعطیلات قمری و مناسبت‌های متغیر در این نسخه به‌عنوان تاریخ قطعی درج نشده‌اند تا تاریخ اشتباه نمایش داده نشود.",12,text(),false));
+        page.addView(txt("تعطیلات ثابت نمایش‌داده‌شده: ۱ تا ۴ فروردین، ۱۲ و ۱۳ فروردین، ۱۴ و ۱۵ خرداد، ۲۲ بهمن و ۲۹ اسفند. مناسبت‌های قمری و تعطیلات متغیر در این نسخه درج نشده‌اند تا تاریخ اشتباه نمایش داده نشود.",12,text(),false));
         addBack();
     }
     private int monthHolidayCount(int[][] dates,int month){int n=0;for(int[] d:dates)if(d[0]==month)n++;return n;}
