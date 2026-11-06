@@ -48,7 +48,12 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.BLACK);
         if(Build.VERSION.SDK_INT>=29)getWindow().getDecorView().setSystemUiVisibility(dark?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
-    private void loadBundledFonts(){\n        try{uiFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}\n        try{titleFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}\n        try{arabicFace=Typeface.createFromAsset(getAssets(),"fonts/qurantaha.ttf");}catch(Exception ignored){}\n    }\n    private void loadSavedFonts(){
+    private void loadBundledFonts(){
+        try{uiFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}
+        try{titleFace=Typeface.createFromAsset(getAssets(),"fonts/iramir.ttf");}catch(Exception ignored){}
+        try{arabicFace=Typeface.createFromAsset(getAssets(),"fonts/qurantaha.ttf");}catch(Exception ignored){}
+    }
+    private void loadSavedFonts(){
         android.content.SharedPreferences p=getSharedPreferences(PREF,0);
         String a=p.getString("arabic_path",null),u=p.getString("ui_path",null);
         try{if(a!=null)arabicFace=Typeface.createFromFile(a);}catch(Exception ignored){}
