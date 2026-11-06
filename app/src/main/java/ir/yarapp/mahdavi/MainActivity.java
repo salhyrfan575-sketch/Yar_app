@@ -472,8 +472,8 @@ public class MainActivity extends Activity {
         for(int m=1;m<=12;m++){
             LinearLayout monthBox=column();monthBox.setPadding(10,8,10,10);
             monthBox.addView(txt(months[m-1],18,gold,true));
-            GridLayout grid=new GridLayout(this);grid.setColumnCount(7);grid.setUseDefaultMargins(true);
-            for(String w:weekdays){TextView v=txt(w,11,gold,true);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=30;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(v,lp);}
+            GridLayout grid=new GridLayout(this);grid.setColumnCount(7);grid.setUseDefaultMargins(false);grid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);grid.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+            for(String w:weekdays){TextView v=txt(w,11,gold,true);v.setGravity(Gravity.CENTER);v.setIncludeFontPadding(false);v.setPadding(0,0,0,0);v.setSingleLine(true);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=34;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);lp.setMargins(1,1,1,1);grid.addView(v,lp);}
             int[] first=jalaliToGregorian(year,m,1);Calendar fc=Calendar.getInstance();fc.clear();fc.set(first[0],first[1]-1,first[2]);
             int offset=fc.get(Calendar.DAY_OF_WEEK)%7,count=jalaliMonthLength(year,m);
             for(int k=0;k<offset;k++){TextView blank=txt("",10,text(),false);GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=38;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(blank,lp);}
@@ -482,8 +482,9 @@ public class MainActivity extends Activity {
                 boolean fixed=(m==1&&d<=4)||(m==1&&(d==12||d==13))||(m==3&&(d==14||d==15))||(m==11&&d==22)||(m==12&&d==29);
                 boolean friday=((offset+d-1)%7)==6;
                 TextView cell=txt(String.valueOf(d),13,fixed?Color.WHITE:(friday?0xffc56d62:text()),fixed);
+                cell.setGravity(Gravity.CENTER);cell.setIncludeFontPadding(false);cell.setPadding(0,0,0,0);cell.setSingleLine(true);cell.setMinWidth(0);
                 if(fixed)cell.setBackground(shape(0xff9b7330,12));
-                GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=38;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);grid.addView(cell,lp);
+                GridLayout.LayoutParams lp=new GridLayout.LayoutParams();lp.width=0;lp.height=40;lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);lp.setMargins(1,1,1,1);grid.addView(cell,lp);
                 cell.setOnClickListener(v->{
                     int[] g=jalaliToGregorian(year,fm,fd);
                     String msg=String.format(Locale.US,"%04d/%02d/%02d",year,fm,fd)+"\nمعادل میلادی: "+g[0]+"/"+g[1]+"/"+g[2];
